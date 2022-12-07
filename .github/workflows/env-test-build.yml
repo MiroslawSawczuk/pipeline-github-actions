@@ -31,7 +31,7 @@ jobs:
           path: android/app/build/outputs/apk/release/my-app-release.apk
 
   ios-build:
-    runs-on: macos-13
+    runs-on: macos-13.0.1
     steps:
       - run: echo "Prepare iOS environment"
       - name: repo checkout
