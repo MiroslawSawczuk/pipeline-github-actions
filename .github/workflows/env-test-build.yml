@@ -1,6 +1,6 @@
 name: test-env-build
 run-name: ${{ github.actor }} triggered github action
-name: build-app
+
 on:
   push:
     branches:
@@ -19,5 +19,3 @@ jobs:
 
       - name: install npm packages
       - run: npm install --force
-
-
