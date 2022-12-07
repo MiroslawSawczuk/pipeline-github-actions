@@ -5,10 +5,10 @@ on:
     branches:
       - main
 jobs:
-  android-prebuild:
+  android-build:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Prepare environment"
+      - run: Prepare environment
       - name: repo checkout
         uses: actions/checkout@v3
 
