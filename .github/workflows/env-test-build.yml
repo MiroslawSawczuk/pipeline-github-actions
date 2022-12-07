@@ -74,7 +74,7 @@ jobs:
         run: npm install --force
 
       - name: Linting
-        run: yarn lint
+        run: eslint . --ext .js,.jsx,.ts,.tsx
 
       - name: Unit & Integration tests
         run: jest
