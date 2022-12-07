@@ -61,6 +61,24 @@ jobs:
   install-and-test:
     runs-on: ubuntu-latest
     steps:
+      - run: echo "Prepare test environment"
+      - name: repo checkout
+        uses: actions/checkout@v3
+
+      - name: install node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.15.0
+
+      - name: install npm packages
+        run: npm install --force
+
+      - name: Linting
+        run: yarn lint
+
+      - name: Unit & Integration tests
+        run: jest
+
       - name: Jest coverage report
         uses: ArtiomTr/jest-coverage-report-action@v2.0.6
         with:
