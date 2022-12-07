@@ -1,5 +1,5 @@
 name: test-env-build
-run-name: ${{ github.actor }} triggered github actioną
+run-name: ${{ github.actor }} triggered github action
 on:
   push:
     branches:
@@ -8,6 +8,7 @@ jobs:
   android-prebuild:
     runs-on: ubuntu-latest
     steps:
+      - run: echo "Prepare environment"
       - name: repo checkout
         uses: actions/checkout@v3
 
@@ -18,3 +19,14 @@ jobs:
 
       - name: install npm packages
         run: npm install --force
+
+      - run: echo "Build project"
+      - name: Build Android Release
+        run: |
+          cd android && ./gradlew assembleRelease
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: app-release.apk
+          path: android/app/build/outputs/apk/release/
