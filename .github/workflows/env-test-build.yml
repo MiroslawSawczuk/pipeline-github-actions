@@ -5,6 +5,33 @@ on:
     branches:
       - main
 jobs:
+  install-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Prepare test environment"
+      - name: repo checkout
+        uses: actions/checkout@v3
+
+      - name: install node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.15.0
+
+      - name: install npm packages
+        run: npm install --force
+
+      - name: linting
+        run: npm run lint:fix
+
+      - name: run unit tests
+        run: npm run test
+
+      # - name: Jest coverage report
+      #   uses: ArtiomTr/jest-coverage-report-action@v2.0.6
+      #   with:
+      #     coverage-file: ./jest-report.json
+      #     base-coverage-file: ./jest-report.json
+
   # android-build:
   #   runs-on: ubuntu-latest
   #   steps:
@@ -57,30 +84,3 @@ jobs:
   #       with:
   #         name: "my-app-release-${{ github.run_number }}.ipa"
   #         path: /Users/runner/work/my-app/my-app/my-app-release.ipa
-
-  install-and-test:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Prepare test environment"
-      - name: repo checkout
-        uses: actions/checkout@v3
-
-      - name: install node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16.15.0
-
-      - name: install npm packages
-        run: npm install --force
-
-      # - name: Linting
-      #   run: eslint
-
-      - name: Unit & Integration tests
-        run: yarn test
-
-      # - name: Jest coverage report
-      #   uses: ArtiomTr/jest-coverage-report-action@v2.0.6
-      #   with:
-      #     coverage-file: ./jest-report.json
-      #     base-coverage-file: ./jest-report.json
