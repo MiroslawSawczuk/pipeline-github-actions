@@ -30,30 +30,38 @@ jobs:
   #         name: "my-app-release-${{ github.run_number }}.apk"
   #         path: android/app/build/outputs/apk/release/my-app-release.apk
 
-  ios-build:
-    runs-on: macos-12
+  # ios-build:
+  #   runs-on: macos-12
+  #   steps:
+  #     - run: echo "Prepare iOS environment"
+  #     - name: repo checkout
+  #       uses: actions/checkout@v3
+
+  #     - name: install node
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 16.15.0
+
+  #     - name: install npm packages
+  #       run: npm install --force
+
+  #     - name: install pod dependencies
+  #       run: |
+  #         cd ios && pod install && cd ..
+
+  #     - name: build iOS release
+  #       uses: yukiarrr/ios-build-action@v1.4.0
+
+  #     - name: Upload Artifact to Github Actions
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: "my-app-release-${{ github.run_number }}.ipa"
+  #         path: /Users/runner/work/my-app/my-app/my-app-release.ipa
+
+  install-and-test:
     steps:
-      - run: echo "Prepare iOS environment"
-      - name: repo checkout
-        uses: actions/checkout@v3
-
-      - name: install node
-        uses: actions/setup-node@v3
+      - name: Jest coverage report
+        uses: ArtiomTr/jest-coverage-report-action@v2.0.6
         with:
-          node-version: 16.15.0
-
-      - name: install npm packages
-        run: npm install --force
-
-      - name: install pod dependencies
-        run: |
-          cd ios && pod install && cd ..
-
-      - name: build iOS release
-        uses: yukiarrr/ios-build-action@v1.4.0
-
-      - name: Upload Artifact to Github Actions
-        uses: actions/upload-artifact@v2
-        with:
-          name: "my-app-release-${{ github.run_number }}.ipa"
-          path: /Users/runner/work/my-app/my-app/my-app-release.ipa
+          coverage-file: ./jest-report.json
+          base-coverage-file: ./jest-report.json
