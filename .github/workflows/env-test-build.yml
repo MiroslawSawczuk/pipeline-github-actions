@@ -59,6 +59,7 @@ jobs:
   #         path: /Users/runner/work/my-app/my-app/my-app-release.ipa
 
   install-and-test:
+    runs-on: ubuntu-latest
     steps:
       - name: Jest coverage report
         uses: ArtiomTr/jest-coverage-report-action@v2.0.6
