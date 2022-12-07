@@ -1,0 +1,23 @@
+name: test-env-build
+run-name: ${{ github.actor }} triggered github action
+name: build app
+on:
+  push:
+    branches:
+      - main
+jobs:
+  android-prebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: repo checkout
+      - uses: actions/checkout@v3
+
+      - name: install node
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16.15.0
+
+      - name: install npm packages
+      - run: npm install --force
+
+
