@@ -77,7 +77,7 @@ jobs:
       #   run: eslint
 
       - name: Unit & Integration tests
-        run: jest
+        run: yarn test:coverage
 
       - name: Jest coverage report
         uses: ArtiomTr/jest-coverage-report-action@v2.0.6
