@@ -5,34 +5,34 @@ on:
     branches:
       - main
 jobs:
-  install-and-test:
-    name: Install and test
-    runs-on: ubuntu-latest
+  # install-and-test:
+  #   name: Install and test
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - run: echo "Prepare test environment"
-      - name: repo checkout
-        uses: actions/checkout@v3
+  #   steps:
+  #     - run: echo "Prepare test environment"
+  #     - name: repo checkout
+  #       uses: actions/checkout@v3
 
-      - name: install node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16.15.0
+  #     - name: install node
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 16.15.0
 
-      - name: install npm packages
-        run: npm install --force
+  #     - name: install npm packages
+  #       run: npm install --force
 
-      - name: linting
-        run: npm run lint:fix
+  #     - name: linting
+  #       run: npm run lint:fix
 
-      - name: run unit tests
-        run: npm run test
+  #     - name: run unit tests
+  #       run: npm run test
 
-      # - name: Jest coverage report
-      #   uses: ArtiomTr/jest-coverage-report-action@v2.0.6
-      #   with:
-      #     coverage-file: ./jest-report.json
-      #     base-coverage-file: ./jest-report.json
+  # - name: Jest coverage report
+  #   uses: ArtiomTr/jest-coverage-report-action@v2.0.6
+  #   with:
+  #     coverage-file: ./jest-report.json
+  #     base-coverage-file: ./jest-report.json
 
   android-build:
     name: Android build
@@ -82,7 +82,7 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON_TEXT }}
           packageName: com.savczukinv.pipeline
           releaseFiles: android/app/build/outputs/apk/release/*.apk
-          track: alpha
+          track: production
           status: completed
           inAppUpdatePriority: 2
 
