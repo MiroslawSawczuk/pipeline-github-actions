@@ -42,34 +42,29 @@ jobs:
       - name: repo checkout
         uses: actions/checkout@v3
 
-      - name: install node
+      - name: Install node.js
         uses: actions/setup-node@v3
         with:
           node-version: 16.15.0
 
-      - name: install npm packages
+      - name: Install npm packages
         run: npm install --force
 
-      - name: build Android release .aab
+      - name: Build Android release .aab
         run: |
-          cd android && ./gradlew bundleRelease
+          cd android && ./gradlew bundleRelease --no-daemon
 
-      ## sign generated aab
-      - name: Sign AAB
+      - name: Sign .aab
         id: sign_app
         uses: r0adkll/sign-android-release@v1
         with:
-          releaseDirectory: ./
+          releaseDirectory: android/app/build/outputs/bundle/release/*.aab
           signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
           alias: ${{ secrets.ANDROID_ALIAS }}
           keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        env:
-          # override default build-tools version (29.0.3) -- optional
-          BUILD_TOOLS_VERSION: "30.0.2"
 
-      ## Distribute app to Firebase App Distribution for testing / use google play internal track if you have a google play account
-      - name: upload artifact to Firebase App Distribution
+      - name: Distribute app to Firebase app distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
         with:
           appId: ${{secrets.ANDROID_FIREBASE_APP_ID}}
@@ -78,8 +73,7 @@ jobs:
           file: ${{steps.sign_app.outputs.signedReleaseFile}}
           releaseNotes: "Release .apk"
 
-        ## Distribute app to Google play alpha track
-      - name: Upload App to Google Play
+      - name: Upload app to Google play store
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON_TEXT }}
