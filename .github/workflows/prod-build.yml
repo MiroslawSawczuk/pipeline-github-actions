@@ -3,7 +3,7 @@ run-name: ${{ github.actor }} triggered github action
 on:
   push:
     branches:
-      - develop
+      - main
 jobs:
   install-and-test:
     name: Install and test
@@ -50,12 +50,12 @@ jobs:
       - name: install npm packages
         run: npm install --force
 
-      - name: build Android release
+      - name: build Android release .abb
         run: |
-          cd android && ./gradlew assembleRelease
+          cd android && ./gradlew bundleRelease --no-daemon
 
       ## sign generated apk
-      - name: Sign APK
+      - name: Sign ABB
         id: sign_app
         uses: r0adkll/sign-android-release@v1
         with:
@@ -65,15 +65,26 @@ jobs:
           keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-      ## Distribute app to Firebase App Distribution for testing / use google play internal track if you have a google play account
-      - name: upload artifact to Firebase App Distribution
+      ## Distribute app to Firebase App Distribution for testing
+      - name: Upload app to Firebase app distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
         with:
           appId: ${{secrets.ANDROID_FIREBASE_APP_ID}}
           token: ${{secrets.ANDROID_FIREBASE_TOKEN}}
           groups: testers
           file: ${{steps.sign_app.outputs.signedReleaseFile}}
-          releaseNotes: "Fresh update of our app"
+          releaseNotes: "Release .abb"
+
+        ## Distribute app to Google play alpha track
+      - name: Upload App to Google Play
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON_TEXT }}
+          packageName: com.test.test
+          releaseFiles: android/app/build/outputs/bundle/release/*.aab
+          track: alpha
+          status: completed
+          inAppUpdatePriority: 2
 
       # - name: Upload Artifact to Github Actions
       #   uses: actions/upload-artifact@v2

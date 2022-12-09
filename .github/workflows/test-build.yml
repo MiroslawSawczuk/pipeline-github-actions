@@ -1,0 +1,110 @@
+name: test-env-build
+run-name: ${{ github.actor }} triggered github action
+on:
+  push:
+    branches:
+      - develop
+jobs:
+  install-and-test:
+    name: Install and test
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: echo "Prepare test environment"
+      - name: repo checkout
+        uses: actions/checkout@v3
+
+      - name: install node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.15.0
+
+      - name: install npm packages
+        run: npm install --force
+
+      - name: linting
+        run: npm run lint:fix
+
+      - name: run unit tests
+        run: npm run test
+
+      # - name: Jest coverage report
+      #   uses: ArtiomTr/jest-coverage-report-action@v2.0.6
+      #   with:
+      #     coverage-file: ./jest-report.json
+      #     base-coverage-file: ./jest-report.json
+
+  android-build:
+    name: Android build
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Prepare Android environment"
+      - name: repo checkout
+        uses: actions/checkout@v3
+
+      - name: install node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.15.0
+
+      - name: install npm packages
+        run: npm install --force
+
+      - name: build Android release .apk
+        run: |
+          cd android && ./gradlew assembleRelease
+
+      ## sign generated apk
+      - name: Sign APK
+        id: sign_app
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: android/app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+          alias: ${{ secrets.ANDROID_ALIAS }}
+          keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      ## Distribute app to Firebase App Distribution for testing / use google play internal track if you have a google play account
+      - name: upload artifact to Firebase App Distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
+        with:
+          appId: ${{secrets.ANDROID_FIREBASE_APP_ID}}
+          token: ${{secrets.ANDROID_FIREBASE_TOKEN}}
+          groups: testers
+          file: ${{steps.sign_app.outputs.signedReleaseFile}}
+          releaseNotes: "Test .apk"
+
+      # - name: Upload Artifact to Github Actions
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: "my-app-release-${{ github.run_number }}.apk"
+      #     path: android/app/build/outputs/apk/release/my-app-release.apk
+
+  # ios-build:
+  #   runs-on: macos-12
+  #   steps:
+  #     - run: echo "Prepare iOS environment"
+  #     - name: repo checkout
+  #       uses: actions/checkout@v3
+
+  #     - name: install node
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 16.15.0
+
+  #     - name: install npm packages
+  #       run: npm install --force
+
+  #     - name: install pod dependencies
+  #       run: |
+  #         cd ios && pod install && cd ..
+
+  #     - name: build iOS release
+  #       uses: yukiarrr/ios-build-action@v1.4.0
+
+  #     - name: Upload Artifact to Github Actions
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: "my-app-release-${{ github.run_number }}.ipa"
+  #         path: /Users/runner/work/my-app/my-app/my-app-release.ipa
