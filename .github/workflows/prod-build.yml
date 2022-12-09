@@ -54,7 +54,7 @@ jobs:
         run: |
           cd android && ./gradlew bundleRelease --no-daemon
 
-      ## sign generated apk
+      ## sign generated aab
       - name: Sign ABB
         id: sign_app
         uses: r0adkll/sign-android-release@v1
