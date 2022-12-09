@@ -1,4 +1,4 @@
-name: test-env-build
+name: prod-env-build
 run-name: ${{ github.actor }} triggered github action
 on:
   push:
@@ -50,7 +50,7 @@ jobs:
       - name: install npm packages
         run: npm install --force
 
-      - name: build Android release .abb
+      - name: build Android release .aab
         run: |
           cd android && ./gradlew bundleRelease --no-daemon
 
