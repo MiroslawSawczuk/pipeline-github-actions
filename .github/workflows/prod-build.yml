@@ -50,38 +50,38 @@ jobs:
       - name: install npm packages
         run: npm install --force
 
-      - name: build Android release .aab
+      - name: build Android release .apk
         run: |
-          cd android && ./gradlew bundleRelease --no-daemon
+          cd android && ./gradlew assembleRelease
 
-      ## sign generated aab
-      - name: Sign ABB
+      ## sign generated apk
+      - name: Sign APK
         id: sign_app
         uses: r0adkll/sign-android-release@v1
         with:
-          releaseDirectory: android/app/build/outputs/bundle/release
+          releaseDirectory: android/app/build/outputs/apk/release
           signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
           alias: ${{ secrets.ANDROID_ALIAS }}
           keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-      ## Distribute app to Firebase App Distribution for testing
-      - name: Upload app to Firebase app distribution
+      ## Distribute app to Firebase App Distribution for testing / use google play internal track if you have a google play account
+      - name: upload artifact to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
         with:
           appId: ${{secrets.ANDROID_FIREBASE_APP_ID}}
           token: ${{secrets.ANDROID_FIREBASE_TOKEN}}
           groups: testers
           file: ${{steps.sign_app.outputs.signedReleaseFile}}
-          releaseNotes: "Release .aab"
+          releaseNotes: "Release .apk"
 
         ## Distribute app to Google play alpha track
       - name: Upload App to Google Play
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON_TEXT }}
-          packageName: com.test.test
-          releaseFiles: android/app/build/outputs/bundle/release/*.aab
+          packageName: com.savczukinv.pipeline
+          releaseFiles: android/app/build/outputs/apk/release/*.apk
           track: alpha
           status: completed
           inAppUpdatePriority: 2
