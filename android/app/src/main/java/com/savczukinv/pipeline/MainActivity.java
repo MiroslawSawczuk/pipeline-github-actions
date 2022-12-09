@@ -1,4 +1,4 @@
-package com.pipeline;
+package com.savczukinv.pipeline;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
