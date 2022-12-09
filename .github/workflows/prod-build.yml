@@ -80,7 +80,7 @@ jobs:
           packageName: com.savczukinv.pipeline
           releaseFiles: android/app/build/outputs/bundle/release/*.aab
           track: production
-          status: completed
+          status: draft
           inAppUpdatePriority: 2
 
       # - name: Upload Artifact to Github Actions
