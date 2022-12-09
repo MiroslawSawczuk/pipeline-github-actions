@@ -50,20 +50,23 @@ jobs:
       - name: install npm packages
         run: npm install --force
 
-      - name: build Android release .apk
+      - name: build Android release .aab
         run: |
-          cd android && ./gradlew assembleRelease
+          cd android && ./gradlew bundleRelease
 
-      ## sign generated apk
-      - name: Sign APK
+      ## sign generated aab
+      - name: Sign AAB
         id: sign_app
         uses: r0adkll/sign-android-release@v1
         with:
-          releaseDirectory: android/app/build/outputs/apk/release
+          releaseDirectory: android/app/build/outputs/bundle/release
           signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
           alias: ${{ secrets.ANDROID_ALIAS }}
           keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        env:
+          # override default build-tools version (29.0.3) -- optional
+          BUILD_TOOLS_VERSION: "30.0.2"
 
       ## Distribute app to Firebase App Distribution for testing / use google play internal track if you have a google play account
       - name: upload artifact to Firebase App Distribution
@@ -81,7 +84,7 @@ jobs:
         with:
           serviceAccountJsonPlainText: ${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON_TEXT }}
           packageName: com.savczukinv.pipeline
-          releaseFiles: android/app/build/outputs/apk/release/*.apk
+          releaseFiles: android/app/build/outputs/bundle/release/*.aab
           track: production
           status: completed
           inAppUpdatePriority: 2
