@@ -1,4 +1,4 @@
-name: test-apk-release
+name: develop build
 run-name: ${{ github.actor }} triggered develop build
 on:
   push:
