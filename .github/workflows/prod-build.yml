@@ -53,7 +53,7 @@ jobs:
       ## build apk
       - name: Build Android release .apk
         run: |
-          cd android && ./gradlew assembleRelease cd ..
+          cd android && ./gradlew assembleRelease && cd ..
 
       ## sign apk
       - name: Sign .apk
