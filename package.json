@@ -12,7 +12,7 @@
     "test:coverage": "jest --coverage",
     "np": "np --no-publish",
     "postversion": "react-native-version",
-    "release:version:patch": "npm version patch",
+    "release:version:test": "npm version patch",
     "release:version:prod": "np"
   },
   "dependencies": {
