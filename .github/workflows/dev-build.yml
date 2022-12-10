@@ -1,5 +1,5 @@
-name: test-env-build
-run-name: ${{ github.actor }} triggered test build
+name: test-apk-release
+run-name: ${{ github.actor }} triggered develop build
 on:
   push:
     branches:
@@ -66,16 +66,21 @@ jobs:
           keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-      ## Distribute apk to Firebase App Distribution
-      - name: Upload .apk to Firebase App Distribution
-        uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
+        ## build aab
+      - name: Build Android release .aab
+        run: |
+          cd android && ./gradlew bundleRelease --no-daemon
+
+      ## sign aab
+      - name: Sign .aab
+        id: sign_aab
+        uses: r0adkll/sign-android-release@v1
         with:
-          appId: ${{secrets.ANDROID_FIREBASE_APP_ID}}
-          # serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
-          token: ${{secrets.ANDROID_FIREBASE_TOKEN}}
-          groups: testers
-          file: ${{steps.sign_apk.outputs.signedReleaseFile}}
-          releaseNotes: "Test .apk"
+          releaseDirectory: android/app/build/outputs/bundle/release
+          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+          alias: ${{ secrets.ANDROID_ALIAS }}
+          keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
   # ios-build:
   #   runs-on: macos-12

@@ -1,5 +1,5 @@
-name: prod-env-build
-run-name: ${{ github.actor }} triggered prod build
+name: prod-abb-release
+run-name: ${{ github.actor }} triggered prod .abb release
 on:
   push:
     branches:
@@ -93,7 +93,7 @@ jobs:
           keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-      # - name: Distribute app to Firebase app distribution
+      # - name: Distribute abb to Firebase app distribution
       #   uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
       #   with:
       #     appId: ${{secrets.ANDROID_FIREBASE_APP_ID}}
