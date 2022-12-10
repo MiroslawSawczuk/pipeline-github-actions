@@ -50,6 +50,9 @@ jobs:
       - name: Install npm packages
         run: npm install --force
 
+      - name: Bump version
+        run: npm version patch
+
       ## build apk
       - name: Build Android release .apk
         run: |
