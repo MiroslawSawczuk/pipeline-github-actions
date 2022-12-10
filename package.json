@@ -1,6 +1,6 @@
 {
   "name": "pipeline",
-  "version": "0.0.14",
+  "version": "0.0.13",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -11,7 +11,8 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "np": "np --no-publish",
-    "postversion": "react-native-version"
+    "postversion": "react-native-version",
+    "bump:patch": "npm version patch"
   },
   "dependencies": {
     "firebase": "^9.14.0",
