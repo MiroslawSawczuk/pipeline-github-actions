@@ -10,22 +10,22 @@ jobs:
   #   runs-on: ubuntu-latest
 
   #   steps:
-  #     - run: echo "Prepare test environment"
-  #     - name: repo checkout
+  #     ## prepare environment
+  #     - name: Repo checkout
   #       uses: actions/checkout@v3
 
-  #     - name: install node
+  #     - name: Install node.js
   #       uses: actions/setup-node@v3
   #       with:
   #         node-version: 16.15.0
 
-  #     - name: install npm packages
+  #     - name: Install npm packages
   #       run: npm install --force
 
-  #     - name: linting
+  #     - name: Linting check
   #       run: npm run lint:fix
 
-  #     - name: run unit tests
+  #     - name: Run unit tests
   #       run: npm run test
 
   # - name: Jest coverage report
@@ -38,8 +38,8 @@ jobs:
     name: Android build
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Prepare Android environment"
-      - name: repo checkout
+      ## prepare environment
+      - name: Repo checkout
         uses: actions/checkout@v3
 
       - name: Install node.js
@@ -51,12 +51,12 @@ jobs:
         run: npm install --force
 
       ## build apk
-      - name: build Android release .apk
+      - name: Build Android release .apk
         run: |
-          cd android && ./gradlew assembleRelease
+          cd android && ./gradlew assembleRelease cd ..
 
       ## sign apk
-      - name: Sign APK
+      - name: Sign .apk
         id: sign_apk
         uses: r0adkll/sign-android-release@v1
         with:
@@ -67,11 +67,12 @@ jobs:
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
       ## Distribute apk to Firebase App Distribution
-      - name: upload artifact to Firebase App Distribution
+      - name: Upload .apk to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
         with:
           appId: ${{secrets.ANDROID_FIREBASE_APP_ID}}
-          serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
+          # serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
+          token: ${{secrets.ANDROID_FIREBASE_TOKEN}}
           groups: testers
           file: ${{steps.sign_apk.outputs.signedReleaseFile}}
           releaseNotes: "Release .apk"
@@ -96,14 +97,14 @@ jobs:
       #   uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
       #   with:
       #     appId: ${{secrets.ANDROID_FIREBASE_APP_ID}}
-      #     # token: ${{secrets.ANDROID_FIREBASE_TOKEN}}
-      #     serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
+      #     token: ${{secrets.ANDROID_FIREBASE_TOKEN}}
+      #     # serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
       #     groups: testers
       #     file: android/app/build/outputs/bundle/release/app-release.aab
       #     releaseNotes: "Release .aab"
 
       ## Distribute aab to Google play store
-      - name: Upload app to Google play store
+      - name: Upload .abb to Google play store
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON_TEXT }}
@@ -112,12 +113,6 @@ jobs:
           track: production
           status: draft
           inAppUpdatePriority: 2
-
-      # - name: Upload Artifact to Github Actions
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: "my-app-release-${{ github.run_number }}.apk"
-      #     path: android/app/build/outputs/apk/release/my-app-release.apk
 
   # ios-build:
   #   runs-on: macos-12
