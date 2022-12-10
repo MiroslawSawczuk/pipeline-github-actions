@@ -1,5 +1,5 @@
 name: prod-env-build
-run-name: ${{ github.actor }} triggered github action
+run-name: ${{ github.actor }} triggered prod build
 on:
   push:
     branches:
