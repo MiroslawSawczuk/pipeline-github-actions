@@ -50,10 +50,38 @@ jobs:
       - name: Install npm packages
         run: npm install --force
 
+      ## build apk
+      - name: build Android release .apk
+        run: |
+          cd android && ./gradlew assembleRelease
+
+      ## sign apk
+      - name: Sign APK
+        id: sign_app
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: android/app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+          alias: ${{ secrets.ANDROID_ALIAS }}
+          keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      ## Distribute apk to Firebase App Distribution
+      - name: upload artifact to Firebase App Distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
+        with:
+          appId: ${{secrets.ANDROID_FIREBASE_APP_ID}}
+          serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
+          groups: testers
+          file: ${{steps.sign_app.outputs.signedReleaseFile}}
+          releaseNotes: "Release .apk"
+
+      ## build aab
       - name: Build Android release .aab
         run: |
           cd android && ./gradlew bundleRelease --no-daemon
 
+      ## sign aab
       - name: Sign .aab
         id: sign_app
         uses: r0adkll/sign-android-release@v1
@@ -64,16 +92,17 @@ jobs:
           keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-      - name: Distribute app to Firebase app distribution
-        uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
-        with:
-          appId: ${{secrets.ANDROID_FIREBASE_APP_ID}}
-          # token: ${{secrets.ANDROID_FIREBASE_TOKEN}}
-          serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
-          groups: testers
-          file: android/app/build/outputs/bundle/release/app-release.aab
-          releaseNotes: "Release .aab"
+      # - name: Distribute app to Firebase app distribution
+      #   uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
+      #   with:
+      #     appId: ${{secrets.ANDROID_FIREBASE_APP_ID}}
+      #     # token: ${{secrets.ANDROID_FIREBASE_TOKEN}}
+      #     serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
+      #     groups: testers
+      #     file: android/app/build/outputs/bundle/release/app-release.aab
+      #     releaseNotes: "Release .aab"
 
+      ## Distribute aab to Google play store
       - name: Upload app to Google play store
         uses: r0adkll/upload-google-play@v1
         with:
