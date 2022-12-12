@@ -102,7 +102,7 @@ jobs:
           keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-      ## upload artifact apk
+      ## upload artifact apk to GHA
       - name: Artifact .apk upload to GHA
         uses: actions/upload-artifact@v3
         with:
@@ -125,7 +125,7 @@ jobs:
           keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-      ## upload artifact aab
+      ## upload artifact aab to GHA
       - name: Artifact .abb upload to GHA
         uses: actions/upload-artifact@v3
         with:
@@ -180,7 +180,7 @@ jobs:
             ${{ runner.os }}-pods-
 
       - name: Install pods dependencies
-        run: cd ios && pod install --repo-update && cd ..
+        run: cd ios && pod install --repo-update
 
       ## build ipa
       - name: Build and sign iOS release .ipa
@@ -194,7 +194,7 @@ jobs:
           team-id: ${{ secrets.IOS_TEAM_ID }}
           certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
 
-      ## upload artifact ipa
+      ## upload artifact ipa to GHA
       - name: Artifact .ipa upload to GHA
         uses: actions/upload-artifact@v3
         with:
