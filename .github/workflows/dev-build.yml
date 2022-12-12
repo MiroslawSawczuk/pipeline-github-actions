@@ -104,10 +104,10 @@ jobs:
 
       ## upload artifact apk
       - name: Artifact .apk upload to GHA
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: "pipeline-${{ github.run_number }}.apk"
-          path: android/app/build/outputs/apk/release/app-release.apk
+          path: "android/app/build/outputs/apk/release/app-release.apk"
 
       ## build aab
       - name: Build Android release .aab
@@ -127,10 +127,10 @@ jobs:
 
       ## upload artifact aab
       - name: Artifact .abb upload to GHA
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: "pipeline-${{ github.run_number }}.aab"
-          path: android/app/build/outputs/bundle/release/app-release.aab
+          path: "android/app/build/outputs/bundle/release/app-release.aab"
 
   ios-build:
     name: iOS build
@@ -193,3 +193,10 @@ jobs:
           code-signing-identity: "iPhone Distribution"
           team-id: ${{ secrets.IOS_TEAM_ID }}
           certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+
+      ## upload artifact ipa
+      - name: Artifact .ipa upload to GHA
+        uses: actions/upload-artifact@v3
+        with:
+          name: "pipeline-${{ github.run_number }}.ipa"
+          path: /Users/runner/work/pipeline/pipeline/output.ipa
