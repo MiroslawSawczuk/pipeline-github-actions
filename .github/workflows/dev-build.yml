@@ -151,10 +151,10 @@ jobs:
       #   run: yarn install --immutable
 
       ## cache pods
-      - name: Setup Ruby (bundle)
+      - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.0"
+          ruby-version: "2.7.5"
           bundler-cache: true
 
       - name: Restore Pods cache
