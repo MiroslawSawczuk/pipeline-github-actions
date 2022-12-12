@@ -132,6 +132,9 @@ jobs:
   ios-build:
     name: iOS build
     runs-on: macos-latest
+    defaults:
+      working-directory: ios
+
     steps:
       ## prepare environment with cashing
       - name: Repo checkout

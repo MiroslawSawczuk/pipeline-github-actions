@@ -121,6 +121,9 @@ jobs:
   ios-build:
     name: iOS build
     runs-on: macos-latest
+    defaults:
+      working-directory: ios
+
     steps:
       ## prepare environment with cashing
       - name: Repo checkout
@@ -165,7 +168,7 @@ jobs:
             ${{ runner.os }}-pods-
 
       - name: Install pods dependencies
-        run: cd ios && pod install && cd ..
+        run: pod install && cd ..
 
       ## build ipa
       - name: Build and sign iOS release .ipa
