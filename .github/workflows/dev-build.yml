@@ -199,4 +199,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: "pipeline-${{ github.run_number }}.ipa"
-          path: /Users/runner/work/pipeline/pipeline/output.ipa
+          path: /Users/runner/work/pipeline/pipeline/*.ipa
