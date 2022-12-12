@@ -1,9 +1,10 @@
-name: prod-abb-release
-run-name: ${{ github.actor }} triggered prod .abb release
+name: prod-release
+run-name: ${{ github.actor }} triggered prod release
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch: # To trigger manual build
+    release:
+      types: [published] # only run the workflow when a new release has been published
+
 jobs:
   # install-and-test:
   #   name: Install and test
