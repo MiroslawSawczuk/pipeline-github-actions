@@ -5,34 +5,34 @@ on:
     branches:
       - develop
 jobs:
-  # install-and-test:
-  #   name: Install and test
-  #   runs-on: ubuntu-latest
+  install-and-test:
+    name: Install and test
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     ## prepare environment
-  #     - name: Repo checkout
-  #       uses: actions/checkout@v3
+    steps:
+      ## prepare environment
+      - name: Repo checkout
+        uses: actions/checkout@v3
 
-  #     - name: Install node.js
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 16.15.0
+      - name: Install node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.15.0
 
-  #     - name: Install npm packages
-  #       run: npm install --force
+      - name: Install npm packages
+        run: npm install --force
 
-  #     - name: Linting check
-  #       run: npm run lint:fix
+      - name: Linting check
+        run: npm run lint:fix
 
-  #     - name: Run unit tests
-  #       run: npm run test
+      - name: Run unit tests
+        run: npm run test
 
-  # - name: Jest coverage  report
-  #   uses: ArtiomTr/jest-coverage-report-action@v2.0.6
-  #   with:
-  #     coverage-file: ./jest-report.json
-  #     base-coverage-file: ./jest-report.json
+  - name: Jest coverage  report
+    uses: ArtiomTr/jest-coverage-report-action@v2.0.6
+    with:
+      coverage-file: ./jest-report.json
+      base-coverage-file: ./jest-report.json
 
   # android-build:
   #   name: Android build
@@ -82,34 +82,34 @@ jobs:
   #         keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
   #         keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-  ios-build:
-    name: iOS build
-    runs-on: macos-12
-    steps:
-      ## prepare environment
-      - name: repo checkout
-        uses: actions/checkout@v3
+  # ios-build:
+  #   name: iOS build
+  #   runs-on: macos-12
+  #   steps:
+  #     ## prepare environment
+  #     - name: repo checkout
+  #       uses: actions/checkout@v3
 
-      - name: Install node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16.15.0
+  #     - name: Install node.js
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 16.15.0
 
-      - name: install npm packages
-        run: npm install --force
+  #     - name: install npm packages
+  #       run: npm install --force
 
-      - name: install pod dependencies
-        run: |
-          cd ios && pod install && cd ..
+  #     - name: install pod dependencies
+  #       run: |
+  #         cd ios && pod install && cd ..
 
-      - name: build iOS release
-        uses: yukiarrr/ios-build-action@v1.4.0
-        with:
-          project-path: ios/pipeline.xcodeproj
-          workspace-path: ios/pipeline.xcworkspace
+  #     - name: build iOS release
+  #       uses: yukiarrr/ios-build-action@v1.4.0
+  #       with:
+  #         project-path: ios/pipeline.xcodeproj
+  #         workspace-path: ios/pipeline.xcworkspace
 
-          mobileprovision-base64: ${{ secrets.IOS_MOBILE_PROVISION_BASE64 }}
-          p12-base64: ${{ secrets.IOS_P12_BASE64 }}
-          code-signing-identity: "iPhone Distribution"
-          team-id: ${{ secrets.IOS_TEAM_ID }}
-          certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+  #         mobileprovision-base64: ${{ secrets.IOS_MOBILE_PROVISION_BASE64 }}
+  #         p12-base64: ${{ secrets.IOS_P12_BASE64 }}
+  #         code-signing-identity: "iPhone Distribution"
+  #         team-id: ${{ secrets.IOS_TEAM_ID }}
+  #         certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
