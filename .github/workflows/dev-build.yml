@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - develop
+
 jobs:
   install-and-test:
     name: Install and test
@@ -28,11 +29,11 @@ jobs:
       - name: Run unit tests
         run: npm run test
 
-  - name: Jest coverage  report
-    uses: ArtiomTr/jest-coverage-report-action@v2.0.6
-    with:
-      coverage-file: ./jest-report.json
-      base-coverage-file: ./jest-report.json
+      - name: Jest coverage  report
+        uses: ArtiomTr/jest-coverage-report-action@v2.0.6
+        with:
+          coverage-file: ./jest-report.json
+          base-coverage-file: ./jest-report.json
 
   # android-build:
   #   name: Android build
