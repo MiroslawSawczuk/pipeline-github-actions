@@ -1,5 +1,5 @@
-name: prod-abb-release
-run-name: ${{ github.actor }} triggered prod .abb release
+name: prod-release
+run-name: ${{ github.actor }} triggered prod release
 on:
   push:
     branches:
