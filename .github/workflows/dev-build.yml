@@ -40,59 +40,59 @@ jobs:
       - name: Run unit tests
         run: yarn test
 
-      # - name: Jest coverage  report
-      #   uses: ArtiomTr/jest-coverage-report-action@v2.0.6
-      #   with:
-      #     coverage-file: ./jest-report.json
-      #     base-coverage-file: ./jest-report.json
+  android-build:
+    name: Android build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repo checkout
+        uses: actions/checkout@v3
 
-  # android-build:
-  #   name: Android build
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     ## prepare environment
-  #     - name: Repo checkout
-  #       uses: actions/checkout@v3
+      - name: Install node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.15.0
 
-  #     - name: Install node.js
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 16.15.0
+      - name: Restore cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.yarn-cache-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
 
-  #     - name: Install npm packages
-  #       run: npm install --force
+      - name: Install dependencies
+        run: yarn install --immutable
 
-  #     ## build apk
-  #     - name: Build Android release .apk
-  #       run: |
-  #         cd android && ./gradlew assembleRelease --no-daemon && cd ..
+      ## build apk
+      - name: Build Android release .apk
+        run: |
+          cd android && ./gradlew assembleRelease --no-daemon && cd ..
 
-  #     ## sign apk
-  #     - name: Sign .apk
-  #       id: sign_apk
-  #       uses: r0adkll/sign-android-release@v1
-  #       with:
-  #         releaseDirectory: android/app/build/outputs/apk/release
-  #         signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
-  #         alias: ${{ secrets.ANDROID_ALIAS }}
-  #         keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
-  #         keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      ## sign apk
+      - name: Sign .apk
+        id: sign_apk
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: android/app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+          alias: ${{ secrets.ANDROID_ALIAS }}
+          keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-  #       ## build aab
-  #     - name: Build Android release .aab
-  #       run: |
-  #         cd android && ./gradlew bundleRelease --no-daemon
+      ## build aab
+      - name: Build Android release .aab
+        run: |
+          cd android && ./gradlew bundleRelease --no-daemon
 
-  #     ## sign aab
-  #     - name: Sign .aab
-  #       id: sign_aab
-  #       uses: r0adkll/sign-android-release@v1
-  #       with:
-  #         releaseDirectory: android/app/build/outputs/bundle/release
-  #         signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
-  #         alias: ${{ secrets.ANDROID_ALIAS }}
-  #         keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
-  #         keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      ## sign aab
+      - name: Sign .aab
+        id: sign_aab
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: android/app/build/outputs/bundle/release
+          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+          alias: ${{ secrets.ANDROID_ALIAS }}
+          keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
   # ios-build:
   #   name: iOS build
