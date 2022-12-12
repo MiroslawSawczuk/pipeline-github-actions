@@ -102,6 +102,13 @@ jobs:
           keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
+      ## upload artifact apk
+      - name: Artifact .apk upload to GHA
+        uses: actions/upload-artifact@v3
+        with:
+          name: "pipeline-${{ github.run_number }}.apk"
+          path: android/app/build/outputs/apk/release/*.apk
+
       ## build aab
       - name: Build Android release .aab
         run: |
@@ -118,6 +125,13 @@ jobs:
           keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
+      ## upload artifact aab
+      - name: Artifact .abb upload to GHA
+        uses: actions/upload-artifact@v3
+        with:
+          name: "pipeline-${{ github.run_number }}.aab"
+          path: android/app/build/outputs/bundle/release/*.aab
+
       ## distribute apk to Firebase app distribution
       - name: Upload .apk to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
@@ -132,9 +146,6 @@ jobs:
   ios-build:
     name: iOS build
     runs-on: macos-latest
-    defaults:
-      run:
-        working-directory: ios
 
     steps:
       ## prepare environment with cashing
@@ -180,7 +191,7 @@ jobs:
             ${{ runner.os }}-pods-
 
       - name: Install pods dependencies
-        run: pod install && cd ..
+        run: cd ios && pod install --repo-update && cd ..
 
       ## build ipa
       - name: Build and sign iOS release .ipa
@@ -193,3 +204,10 @@ jobs:
           code-signing-identity: "iPhone Distribution"
           team-id: ${{ secrets.IOS_TEAM_ID }}
           certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+
+      ## upload artifact ipa
+      - name: Artifact .ipa upload to GHA
+        uses: actions/upload-artifact@v3
+        with:
+          name: "pipeline-${{ github.run_number }}.ipa"
+          path: /Users/runner/work/pipeline/pipeline/*.ipa
