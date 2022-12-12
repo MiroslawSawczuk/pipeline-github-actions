@@ -4,90 +4,15 @@ on:
   push:
     branches:
       - develop
+
 jobs:
-  # install-and-test:
-  #   name: Install and test
-  #   runs-on: ubuntu-latest
+  install-and-test:
+    name: Install and test
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     ## prepare environment
-  #     - name: Repo checkout
-  #       uses: actions/checkout@v3
-
-  #     - name: Install node.js
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 16.15.0
-
-  #     - name: Install npm packages
-  #       run: npm install --force
-
-  #     - name: Linting check
-  #       run: npm run lint:fix
-
-  #     - name: Run unit tests
-  #       run: npm run test
-
-  # - name: Jest coverage  report
-  #   uses: ArtiomTr/jest-coverage-report-action@v2.0.6
-  #   with:
-  #     coverage-file: ./jest-report.json
-  #     base-coverage-file: ./jest-report.json
-
-  # android-build:
-  #   name: Android build
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     ## prepare environment
-  #     - name: Repo checkout
-  #       uses: actions/checkout@v3
-
-  #     - name: Install node.js
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 16.15.0
-
-  #     - name: Install npm packages
-  #       run: npm install --force
-
-  #     ## build apk
-  #     - name: Build Android release .apk
-  #       run: |
-  #         cd android && ./gradlew assembleRelease --no-daemon && cd ..
-
-  #     ## sign apk
-  #     - name: Sign .apk
-  #       id: sign_apk
-  #       uses: r0adkll/sign-android-release@v1
-  #       with:
-  #         releaseDirectory: android/app/build/outputs/apk/release
-  #         signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
-  #         alias: ${{ secrets.ANDROID_ALIAS }}
-  #         keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
-  #         keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
-
-  #       ## build aab
-  #     - name: Build Android release .aab
-  #       run: |
-  #         cd android && ./gradlew bundleRelease --no-daemon
-
-  #     ## sign aab
-  #     - name: Sign .aab
-  #       id: sign_aab
-  #       uses: r0adkll/sign-android-release@v1
-  #       with:
-  #         releaseDirectory: android/app/build/outputs/bundle/release
-  #         signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
-  #         alias: ${{ secrets.ANDROID_ALIAS }}
-  #         keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
-  #         keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
-
-  ios-build:
-    name: iOS build
-    runs-on: macos-12
     steps:
-      ## prepare environment
-      - name: repo checkout
+      ## prepare environment with cashing
+      - name: Repo checkout
         uses: actions/checkout@v3
 
       - name: Install node.js
@@ -95,21 +20,184 @@ jobs:
         with:
           node-version: 16.15.0
 
-      - name: install npm packages
-        run: npm install --force
+      - name: Find yarn cache
+        id: yarn-cache-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
 
-      - name: install pod dependencies
+      - name: Restore yarn cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.yarn-cache-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
+
+      - name: Install npm dependencies
+        run: yarn install --immutable
+
+      - name: Linting check
+        run: yarn lint:fix
+
+      - name: Run unit tests
+        run: yarn test
+
+  android-build:
+    name: Android build
+    runs-on: ubuntu-latest
+    steps:
+      ## prepare environment with cashing
+      - name: Repo checkout
+        uses: actions/checkout@v3
+
+      - name: Install node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.15.0
+
+      ## cache node modules
+      - name: Find yarn cache
+        id: yarn-cache-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: Restore yarn cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.yarn-cache-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
+
+      - name: Install npm dependencies
+        run: yarn install --immutable
+
+      ## cache gradle
+      - name: Cache gradle wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+
+      - name: Cache gradle dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-caches-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-caches-
+
+      - name: Make gradlew executable
+        run: cd android && chmod +x ./gradlew
+
+      ## build apk
+      - name: Build Android release .apk
         run: |
-          cd ios && pod install && cd ..
+          cd android && ./gradlew assembleRelease --no-daemon && cd ..
 
-      - name: build iOS release
+      ## sign apk
+      - name: Sign .apk
+        id: sign_apk
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: android/app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+          alias: ${{ secrets.ANDROID_ALIAS }}
+          keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      ## upload artifact apk to GHA
+      - name: Artifact .apk upload to GHA
+        uses: actions/upload-artifact@v3
+        with:
+          name: "pipeline-${{ github.run_number }}.apk"
+          path: android/app/build/outputs/apk/release/*.apk
+
+      ## build aab
+      - name: Build Android release .aab
+        run: |
+          cd android && ./gradlew bundleRelease --no-daemon
+
+      ## sign aab
+      - name: Sign .aab
+        id: sign_aab
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: android/app/build/outputs/bundle/release
+          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+          alias: ${{ secrets.ANDROID_ALIAS }}
+          keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      ## upload artifact aab to GHA
+      - name: Artifact .abb upload to GHA
+        uses: actions/upload-artifact@v3
+        with:
+          name: "pipeline-${{ github.run_number }}.aab"
+          path: android/app/build/outputs/bundle/release/*.aab
+
+  ios-build:
+    name: iOS build
+    runs-on: macos-latest
+
+    steps:
+      ## prepare environment with cashing
+      - name: Repo checkout
+        uses: actions/checkout@v3
+
+      - name: Install node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.15.0
+
+      ## cache node modules
+      - name: Find yarn cache
+        id: yarn-cache-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: Restore yarn cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.yarn-cache-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
+
+      - name: Install npm dependencies
+        run: yarn install --immutable
+
+      ## cache pods
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "2.7.5"
+          bundler-cache: true
+
+      - name: Restore pods cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ios/Pods
+            ~/Library/Caches/CocoaPods
+            ~/.cocoapods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Install pods dependencies
+        run: cd ios && pod install --repo-update
+
+      ## build ipa
+      - name: Build and sign iOS release .ipa
         uses: yukiarrr/ios-build-action@v1.4.0
         with:
           project-path: ios/pipeline.xcodeproj
           workspace-path: ios/pipeline.xcworkspace
-
           mobileprovision-base64: ${{ secrets.IOS_MOBILE_PROVISION_BASE64 }}
           p12-base64: ${{ secrets.IOS_P12_BASE64 }}
           code-signing-identity: "iPhone Distribution"
           team-id: ${{ secrets.IOS_TEAM_ID }}
           certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          export-method: "ad-hoc"
+
+      ## upload artifact ipa to GHA
+      - name: Artifact .ipa upload to GHA
+        uses: actions/upload-artifact@v3
+        with:
+          name: "pipeline-${{ github.run_number }}.ipa"
+          path: /Users/runner/work/pipeline/pipeline/*.ipa
