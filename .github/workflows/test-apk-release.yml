@@ -34,48 +34,48 @@ jobs:
   #     coverage-file: ./jest-report.json
   #     base-coverage-file: ./jest-report.json
 
-  android-build:
-    name: Android build
-    runs-on: ubuntu-latest
-    steps:
-      ## prepare environment
-      - name: Repo checkout
-        uses: actions/checkout@v3
+  # android-build:
+  #   name: Android build
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     ## prepare environment
+  #     - name: Repo checkout
+  #       uses: actions/checkout@v3
 
-      - name: Install node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16.15.0
+  #     - name: Install node.js
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 16.15.0
 
-      - name: Install npm packages
-        run: npm install --force
+  #     - name: Install npm packages
+  #       run: npm install --force
 
-      ## build apk
-      - name: Build Android release .apk
-        run: |
-          cd android && ./gradlew assembleRelease --no-daemon && cd ..
+  #     ## build apk
+  #     - name: Build Android release .apk
+  #       run: |
+  #         cd android && ./gradlew assembleRelease --no-daemon && cd ..
 
-      ## sign apk
-      - name: Sign .apk
-        id: sign_apk
-        uses: r0adkll/sign-android-release@v1
-        with:
-          releaseDirectory: android/app/build/outputs/apk/release
-          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
-          alias: ${{ secrets.ANDROID_ALIAS }}
-          keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+  #     ## sign apk
+  #     - name: Sign .apk
+  #       id: sign_apk
+  #       uses: r0adkll/sign-android-release@v1
+  #       with:
+  #         releaseDirectory: android/app/build/outputs/apk/release
+  #         signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+  #         alias: ${{ secrets.ANDROID_ALIAS }}
+  #         keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+  #         keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-      ## Distribute apk to Firebase App Distribution
-      - name: Upload .apk to Firebase App Distribution
-        uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
-        with:
-          appId: ${{secrets.ANDROID_FIREBASE_APP_ID}}
-          # serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
-          token: ${{secrets.ANDROID_FIREBASE_TOKEN}}
-          groups: testers
-          file: ${{steps.sign_apk.outputs.signedReleaseFile}}
-          releaseNotes: "Test .apk"
+  #     ## Distribute apk to Firebase App Distribution
+  #     - name: Upload .apk to Firebase App Distribution
+  #       uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
+  #       with:
+  #         appId: ${{secrets.ANDROID_FIREBASE_APP_ID}}
+  #         # serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
+  #         token: ${{secrets.ANDROID_FIREBASE_TOKEN}}
+  #         groups: testers
+  #         file: ${{steps.sign_apk.outputs.signedReleaseFile}}
+  #         releaseNotes: "Test .apk"
 
   ios-build:
     name: iOS build
@@ -102,9 +102,16 @@ jobs:
         with:
           project-path: ios/pipeline.xcodeproj
           workspace-path: ios/pipeline.xcworkspace
-
           mobileprovision-base64: ${{ secrets.IOS_MOBILE_PROVISION_BASE64 }}
           p12-base64: ${{ secrets.IOS_P12_BASE64 }}
           code-signing-identity: "iPhone Distribution"
           team-id: ${{ secrets.IOS_TEAM_ID }}
           certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+
+      - name: Upload .ipa to TestFlight
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-path: "output.ipa"
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
