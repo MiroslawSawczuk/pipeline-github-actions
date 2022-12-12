@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      ## prepare environment
+      ## prepare environment with cashing
       - name: Repo checkout
         uses: actions/checkout@v3
 
@@ -44,6 +44,7 @@ jobs:
     name: Android build
     runs-on: ubuntu-latest
     steps:
+      ## prepare environment with cashing
       - name: Repo checkout
         uses: actions/checkout@v3
 
@@ -52,6 +53,7 @@ jobs:
         with:
           node-version: 16.15.0
 
+      ## cache node modules
       - name: Find yarn cache
         id: yarn-cache-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
@@ -66,7 +68,7 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-        ## configure cash for gradle : will help to reduce build time
+      ## cache gradle
       - name: Cache Gradle Wrapper
         uses: actions/cache@v2
         with:
@@ -80,6 +82,7 @@ jobs:
           key: ${{ runner.os }}-gradle-caches-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-caches-
+
       - name: Make Gradlew Executable
         run: cd android && chmod +x ./gradlew
 
@@ -115,34 +118,65 @@ jobs:
           keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-  # ios-build:
-  #   name: iOS build
-  #   runs-on: macos-12
-  #   steps:
-  #     ## prepare environment
-  #     - name: repo checkout
-  #       uses: actions/checkout@v3
+  ios-build:
+    name: iOS build
+    runs-on: macos-12
+    steps:
+      ## prepare environment with cashing
+      - name: repo checkout
+        uses: actions/checkout@v3
 
-  #     - name: Install node.js
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 16.15.0
+      - name: Install node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.15.0
 
-  #     - name: install npm packages
-  #       run: npm install --force
+      ## cache node modules
+      - name: Find yarn cache
+        id: yarn-cache-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
 
-  #     - name: install pod dependencies
-  #       run: |
-  #         cd ios && pod install && cd ..
+      - name: Restore cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.yarn-cache-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
 
-  #     - name: build iOS release
-  #       uses: yukiarrr/ios-build-action@v1.4.0
-  #       with:
-  #         project-path: ios/pipeline.xcodeproj
-  #         workspace-path: ios/pipeline.xcworkspace
+      ## cache pods
+      - name: Install dependencies
+        run: yarn install --immutable
 
-  #         mobileprovision-base64: ${{ secrets.IOS_MOBILE_PROVISION_BASE64 }}
-  #         p12-base64: ${{ secrets.IOS_P12_BASE64 }}
-  #         code-signing-identity: "iPhone Distribution"
-  #         team-id: ${{ secrets.IOS_TEAM_ID }}
-  #         certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+      - name: Setup Ruby (bundle)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.6
+          bundler-cache: true
+
+      - name: Restore Pods cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ios/Pods
+            ~/Library/Caches/CocoaPods
+            ~/.cocoapods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: install pod dependencies
+        run: |
+          cd ios && pod install && cd ..
+
+      ## build ipa
+      - name: build iOS release
+        uses: yukiarrr/ios-build-action@v1.4.0
+        with:
+          project-path: ios/pipeline.xcodeproj
+          workspace-path: ios/pipeline.xcworkspace
+
+          mobileprovision-base64: ${{ secrets.IOS_MOBILE_PROVISION_BASE64 }}
+          p12-base64: ${{ secrets.IOS_P12_BASE64 }}
+          code-signing-identity: "iPhone Distribution"
+          team-id: ${{ secrets.IOS_TEAM_ID }}
+          certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
