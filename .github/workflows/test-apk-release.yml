@@ -1,4 +1,4 @@
-name: test-release
+name: test app release
 run-name: ${{ github.actor }} triggered test release
 on:
   push:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      ## prepare environment
+      ## prepare environment with cashing
       - name: Repo checkout
         uses: actions/checkout@v3
 
@@ -24,14 +24,14 @@ jobs:
         id: yarn-cache-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
 
-      - name: Restore cache
+      - name: Restore yarn cache
         uses: actions/cache@v2
         with:
           path: ${{ steps.yarn-cache-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: ${{ runner.os }}-yarn-
 
-      - name: Install dependencies
+      - name: Install npm dependencies
         run: yarn install --immutable
 
       - name: Linting check
@@ -53,27 +53,29 @@ jobs:
         with:
           node-version: 16.15.0
 
+      ## cache node modules
       - name: Find yarn cache
         id: yarn-cache-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
 
-      - name: Restore cache
+      - name: Restore yarn cache
         uses: actions/cache@v2
         with:
           path: ${{ steps.yarn-cache-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: ${{ runner.os }}-yarn-
 
-      - name: Install dependencies
+      - name: Install npm dependencies
         run: yarn install --immutable
 
-      - name: Cache Gradle Wrapper
+      ## cache gradle
+      - name: Cache gradle wrapper
         uses: actions/cache@v2
         with:
           path: ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
 
-      - name: Cache Gradle Dependencies
+      - name: Cache gradle dependencies
         uses: actions/cache@v2
         with:
           path: ~/.gradle/caches
@@ -81,7 +83,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-caches-
 
-      - name: Make Gradlew Executable
+      - name: Make gradlew executable
         run: cd android && chmod +x ./gradlew
 
       ## build apk
@@ -116,7 +118,7 @@ jobs:
           keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-      ## Distribute apk to Firebase App Distribution
+      ## distribute apk to Firebase app distribution
       - name: Upload .apk to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
         with:
@@ -129,10 +131,10 @@ jobs:
 
   ios-build:
     name: iOS build
-    runs-on: macos-12
+    runs-on: macos-latest
     steps:
-      ## prepare environment
-      - name: repo checkout
+      ## prepare environment with cashing
+      - name: Repo checkout
         uses: actions/checkout@v3
 
       - name: Install node.js
@@ -140,19 +142,48 @@ jobs:
         with:
           node-version: 16.15.0
 
-      - name: install npm packages
-        run: npm install --force
+      ## cache node modules
+      - name: Find yarn cache
+        id: yarn-cache-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
 
-      - name: install pod dependencies
-        run: |
-          cd ios && pod install && cd ..
+      - name: Restore yarn cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.yarn-cache-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
 
-      - name: build iOS release
+      - name: Install npm dependencies
+        run: yarn install --immutable
+
+      ## cache pods
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "2.7.5"
+          bundler-cache: true
+
+      - name: Restore pods cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ios/Pods
+            ~/Library/Caches/CocoaPods
+            ~/.cocoapods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Install pods dependencies
+        run: pod install && cd ..
+
+      ## build ipa
+      - name: Build and sign iOS release .ipa
         uses: yukiarrr/ios-build-action@v1.4.0
         with:
           project-path: ios/pipeline.xcodeproj
           workspace-path: ios/pipeline.xcworkspace
-
           mobileprovision-base64: ${{ secrets.IOS_MOBILE_PROVISION_BASE64 }}
           p12-base64: ${{ secrets.IOS_P12_BASE64 }}
           code-signing-identity: "iPhone Distribution"
