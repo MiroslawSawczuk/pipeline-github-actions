@@ -1,9 +1,8 @@
 name: prod app release
 run-name: ${{ github.actor }} triggered prod release
 on:
-  workflow_dispatch:
-    release:
-      types: [published]
+  release:
+    types: [published]
 
 jobs:
   install-and-test:
