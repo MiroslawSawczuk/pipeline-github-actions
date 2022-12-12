@@ -126,31 +126,31 @@ jobs:
         working-directory: ios
 
     steps:
-      ## prepare environment with cashing
-      - name: repo checkout
-        uses: actions/checkout@v3
+      # ## prepare environment with cashing
+      # - name: repo checkout
+      #   uses: actions/checkout@v3
 
-      - name: Install node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16.15.0
+      # - name: Install node.js
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: 16.15.0
 
-      ## cache node modules
-      - name: Find yarn cache
-        id: yarn-cache-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
+      # ## cache node modules
+      # - name: Find yarn cache
+      #   id: yarn-cache-path
+      #   run: echo "::set-output name=dir::$(yarn cache dir)"
 
-      - name: Restore cache
-        uses: actions/cache@v2
-        with:
-          path: ${{ steps.yarn-cache-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: ${{ runner.os }}-yarn-
+      # - name: Restore cache
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: ${{ steps.yarn-cache-path.outputs.dir }}
+      #     key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+      #     restore-keys: ${{ runner.os }}-yarn-
+
+      # - name: Install dependencies
+      #   run: yarn install --immutable
 
       ## cache pods
-      - name: Install dependencies
-        run: yarn install --immutable
-
       - name: Setup Ruby (bundle)
         uses: ruby/setup-ruby@v1
         with:
@@ -172,15 +172,15 @@ jobs:
         run: |
           cd ios && pod install && cd ..
 
-      ## build ipa
-      - name: build iOS release
-        uses: yukiarrr/ios-build-action@v1.4.0
-        with:
-          project-path: ios/pipeline.xcodeproj
-          workspace-path: ios/pipeline.xcworkspace
+      # ## build ipa
+      # - name: build iOS release
+      #   uses: yukiarrr/ios-build-action@v1.4.0
+      #   with:
+      #     project-path: ios/pipeline.xcodeproj
+      #     workspace-path: ios/pipeline.xcworkspace
 
-          mobileprovision-base64: ${{ secrets.IOS_MOBILE_PROVISION_BASE64 }}
-          p12-base64: ${{ secrets.IOS_P12_BASE64 }}
-          code-signing-identity: "iPhone Distribution"
-          team-id: ${{ secrets.IOS_TEAM_ID }}
-          certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+      #     mobileprovision-base64: ${{ secrets.IOS_MOBILE_PROVISION_BASE64 }}
+      #     p12-base64: ${{ secrets.IOS_P12_BASE64 }}
+      #     code-signing-identity: "iPhone Distribution"
+      #     team-id: ${{ secrets.IOS_TEAM_ID }}
+      #     certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
