@@ -133,7 +133,8 @@ jobs:
     name: iOS build
     runs-on: macos-latest
     defaults:
-      working-directory: ios
+      run:
+        working-directory: ios
 
     steps:
       ## prepare environment with cashing
