@@ -20,20 +20,31 @@ jobs:
         with:
           node-version: 16.15.0
 
-      - name: Install npm packages
-        run: npm install --force
+      - name: Find yarn cache
+        id: yarn-cache-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: Restore cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.yarn-cache-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
+
+      - name: Install dependencies
+        run: yarn install --immutable
 
       - name: Linting check
-        run: npm run lint:fix
+        run: yarn lint:fix
 
       - name: Run unit tests
-        run: npm run test
+        run: yarn test
 
-      - name: Jest coverage  report
-        uses: ArtiomTr/jest-coverage-report-action@v2.0.6
-        with:
-          coverage-file: ./jest-report.json
-          base-coverage-file: ./jest-report.json
+      # - name: Jest coverage  report
+      #   uses: ArtiomTr/jest-coverage-report-action@v2.0.6
+      #   with:
+      #     coverage-file: ./jest-report.json
+      #     base-coverage-file: ./jest-report.json
 
   # android-build:
   #   name: Android build
