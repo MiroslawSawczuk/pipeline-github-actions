@@ -168,9 +168,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pods-
 
-      - name: install pod dependencies
-        run: |
-          cd ios && pod install && cd ..
+      - name: Install pod dependencies
+        run: cd ios && pod install --repo-update && cd ..
 
       # ## build ipa
       # - name: build iOS release
