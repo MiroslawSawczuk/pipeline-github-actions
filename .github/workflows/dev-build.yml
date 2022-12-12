@@ -34,12 +34,60 @@ jobs:
   #     coverage-file: ./jest-report.json
   #     base-coverage-file: ./jest-report.json
 
-  android-build:
-    name: Android build
-    runs-on: ubuntu-latest
+  # android-build:
+  #   name: Android build
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     ## prepare environment
+  #     - name: Repo checkout
+  #       uses: actions/checkout@v3
+
+  #     - name: Install node.js
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 16.15.0
+
+  #     - name: Install npm packages
+  #       run: npm install --force
+
+  #     ## build apk
+  #     - name: Build Android release .apk
+  #       run: |
+  #         cd android && ./gradlew assembleRelease --no-daemon && cd ..
+
+  #     ## sign apk
+  #     - name: Sign .apk
+  #       id: sign_apk
+  #       uses: r0adkll/sign-android-release@v1
+  #       with:
+  #         releaseDirectory: android/app/build/outputs/apk/release
+  #         signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+  #         alias: ${{ secrets.ANDROID_ALIAS }}
+  #         keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+  #         keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+  #       ## build aab
+  #     - name: Build Android release .aab
+  #       run: |
+  #         cd android && ./gradlew bundleRelease --no-daemon
+
+  #     ## sign aab
+  #     - name: Sign .aab
+  #       id: sign_aab
+  #       uses: r0adkll/sign-android-release@v1
+  #       with:
+  #         releaseDirectory: android/app/build/outputs/bundle/release
+  #         signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+  #         alias: ${{ secrets.ANDROID_ALIAS }}
+  #         keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+  #         keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+  ios-build:
+    name: iOS build
+    runs-on: macos-12
     steps:
       ## prepare environment
-      - name: Repo checkout
+      - name: repo checkout
         uses: actions/checkout@v3
 
       - name: Install node.js
@@ -47,65 +95,21 @@ jobs:
         with:
           node-version: 16.15.0
 
-      - name: Install npm packages
+      - name: install npm packages
         run: npm install --force
 
-      ## build apk
-      - name: Build Android release .apk
+      - name: install pod dependencies
         run: |
-          cd android && ./gradlew assembleRelease --no-daemon && cd ..
+          cd ios && pod install && cd ..
 
-      ## sign apk
-      - name: Sign .apk
-        id: sign_apk
-        uses: r0adkll/sign-android-release@v1
+      - name: build iOS release
+        uses: yukiarrr/ios-build-action@v1.4.0
         with:
-          releaseDirectory: android/app/build/outputs/apk/release
-          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
-          alias: ${{ secrets.ANDROID_ALIAS }}
-          keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          project-path: ios/pipeline.xcodeproj
+          workspace-path: ios/pipeline.xcworkspace
 
-        ## build aab
-      - name: Build Android release .aab
-        run: |
-          cd android && ./gradlew bundleRelease --no-daemon
-
-      ## sign aab
-      - name: Sign .aab
-        id: sign_aab
-        uses: r0adkll/sign-android-release@v1
-        with:
-          releaseDirectory: android/app/build/outputs/bundle/release
-          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
-          alias: ${{ secrets.ANDROID_ALIAS }}
-          keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
-
-  # ios-build:
-  #   runs-on: macos-12
-  #   steps:
-  #     - run: echo "Prepare iOS environment"
-  #     - name: repo checkout
-  #       uses: actions/checkout@v3
-
-  #     - name: install node
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 16.15.0
-
-  #     - name: install npm packages
-  #       run: npm install --force
-
-  #     - name: install pod dependencies
-  #       run: |
-  #         cd ios && pod install && cd ..
-
-  #     - name: build iOS release
-  #       uses: yukiarrr/ios-build-action@v1.4.0
-
-  #     - name: Upload Artifact to Github Actions
-  #       uses: actions/upload-artifact@v2
-  #       with:
-  #         name: "my-app-release-${{ github.run_number }}.ipa"
-  #         path: /Users/runner/work/my-app/my-app/my-app-release.ipa
+          mobileprovision-base64: ${{ secrets.IOS_MOBILE_PROVISION_BASE64 }}
+          p12-base64: ${{ secrets.IOS_P12_BASE64 }}
+          code-signing-identity: "iPhone Distribution"
+          team-id: ${{ secrets.IOS_TEAM_ID }}
+          certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
