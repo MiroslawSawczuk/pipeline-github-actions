@@ -15,10 +15,10 @@ jobs:
       - name: Repo checkout
         uses: actions/checkout@v3
 
-      #     - name: Install node.js
-      #       uses: actions/setup-node@v3
-      #       with:
-      #         node-version: 16.15.0
+      - name: Install node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.15.0
 
       - name: Find yarn cache
         id: yarn-cache-path
@@ -86,21 +86,21 @@ jobs:
       - name: Make gradlew executable
         run: cd android && chmod +x ./gradlew
 
-      #     ## build apk
-      #     - name: Build Android release .apk
-      #       run: |
-      #         cd android && ./gradlew assembleRelease --no-daemon && cd ..
+      ## build apk
+      - name: Build Android release .apk
+        run: |
+          cd android && ./gradlew assembleRelease --no-daemon && cd ..
 
-      #     ## sign apk
-      #     - name: Sign .apk
-      #       id: sign_apk
-      #       uses: r0adkll/sign-android-release@v1
-      #       with:
-      #         releaseDirectory: android/app/build/outputs/apk/release
-      #         signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
-      #         alias: ${{ secrets.ANDROID_ALIAS }}
-      #         keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
-      #         keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      ## sign apk
+      - name: Sign .apk
+        id: sign_apk
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: android/app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+          alias: ${{ secrets.ANDROID_ALIAS }}
+          keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
       ## upload artifact apk to GHA
       - name: Artifact .apk upload to GHA
@@ -204,10 +204,11 @@ jobs:
           code-signing-identity: "iPhone Distribution"
           team-id: ${{ secrets.IOS_TEAM_ID }}
           certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          output-path: "pipeline.ipa"
 
       ## upload artifact ipa to GHA
       - name: Artifact .ipa upload to GHA
         uses: actions/upload-artifact@v3
         with:
           name: "pipeline-${{ github.run_number }}.ipa"
-          path: /Users/runner/work/pipeline/pipeline/*.ipa
+          path: "pipeline.ipa"
