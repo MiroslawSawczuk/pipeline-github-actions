@@ -1,7 +1,7 @@
 name: develop build
-run-name: ${{ github.actor }} triggered develop build - ${{ github.event.head_commit.message }}
+run-name: ${{ github.actor }} triggered develop build - ${{ github.ref }}
 on:
-  push:
+  pull_request: ## on pull_request in order to generate test coverage report
     branches:
       - develop
 
@@ -39,6 +39,17 @@ jobs:
 
       - name: Run unit tests
         run: yarn test
+
+      - name: Generate test coverage report
+        uses: ArtiomTr/jest-coverage-report-action@v2
+        id: coverage
+        with:
+          output: report-markdown
+
+      - name: Display test coverage report
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          message: ${{ steps.coverage.outputs.report }}
 
   android-build:
     name: Android build
