@@ -1,5 +1,5 @@
 name: test app release
-run-name: ${{ github.actor }} triggered test release - ${{ github.event.head_commit.message }}
+run-name: ${{ github.actor }} triggered test release - ${{ github.event.head_commit.message }} - ${{ github.ref }}
 on:
   pull_request:
     branches:
