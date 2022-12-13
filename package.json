@@ -15,6 +15,7 @@
     "postversion": "react-native-version",
     "update:patch": "npm version patch",
     "update:minor": "npm version minor",
+    "update:major": "npm version major",
     "update:release": "np"
   },
   "dependencies": {
