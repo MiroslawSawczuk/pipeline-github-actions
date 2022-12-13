@@ -1,7 +1,7 @@
 name: develop build
 run-name: ${{ github.actor }} triggered develop build - ${{ github.event.head_commit.message }}
 on:
-  push:
+  pull_request:
     branches:
       - develop
 
