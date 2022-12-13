@@ -1,5 +1,5 @@
 name: prod app release
-run-name: ${{ github.actor }} triggered prod release
+run-name: ${{ github.actor }} triggered prod release with ${{ github.event.head_commit.message }}
 on:
   workflow_dispatch:
 
