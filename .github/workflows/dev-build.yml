@@ -6,117 +6,117 @@ on:
       - develop
 
 jobs:
-  # install-and-test:
-  #   name: Install and test
-  #   runs-on: ubuntu-latest
+  install-and-test:
+    name: Install and test
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     ## prepare environment with cashing
-  #     - name: Repo checkout
-  #       uses: actions/checkout@v3
+    steps:
+      ## prepare environment with cashing
+      - name: Repo checkout
+        uses: actions/checkout@v3
 
-  #     - name: Install node.js
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 16.15.0
+      - name: Install node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.15.0
 
-  # - name: Find yarn cache
-  #   id: yarn-cache-path
-  #   run: echo "::set-output name=dir::$(yarn cache dir)"
+      - name: Find yarn cache
+        id: yarn-cache-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
 
-  # - name: Restore yarn cache
-  #   uses: actions/cache@v2
-  #   with:
-  #     path: ${{ steps.yarn-cache-path.outputs.dir }}
-  #     key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-  #     restore-keys: ${{ runner.os }}-yarn-
+      - name: Restore yarn cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.yarn-cache-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
 
-  # - name: Install npm dependencies
-  #   run: yarn install --immutable
+      - name: Install npm dependencies
+        run: yarn install --immutable
 
-  # - name: Linting check
-  #   run: yarn lint:fix
+      - name: Linting check
+        run: yarn lint:fix
 
-  # - name: Run unit tests
-  #   run: yarn test
+      - name: Run unit tests
+        run: yarn test
 
-  # android-build:
-  #   name: Android build
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     ## prepare environment with cashing
-  #     - name: Repo checkout
-  #       uses: actions/checkout@v3
+  android-build:
+    name: Android build
+    runs-on: ubuntu-latest
+    steps:
+      ## prepare environment with cashing
+      - name: Repo checkout
+        uses: actions/checkout@v3
 
-  #     - name: Install node.js
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 16.15.0
+      - name: Install node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.15.0
 
-  #     ## cache node modules
-  #     - name: Find yarn cache
-  #       id: yarn-cache-path
-  #       run: echo "::set-output name=dir::$(yarn cache dir)"
+      ## cache node modules
+      - name: Find yarn cache
+        id: yarn-cache-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
 
-  #     - name: Restore yarn cache
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: ${{ steps.yarn-cache-path.outputs.dir }}
-  #         key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-  #         restore-keys: ${{ runner.os }}-yarn-
+      - name: Restore yarn cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.yarn-cache-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
 
-  #     - name: Install npm dependencies
-  #       run: yarn install --immutable
+      - name: Install npm dependencies
+        run: yarn install --immutable
 
-  #     ## cache gradle
-  #     - name: Cache gradle wrapper
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: ~/.gradle/wrapper
-  #         key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      ## cache gradle
+      - name: Cache gradle wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
 
-  #     - name: Cache gradle dependencies
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: ~/.gradle/caches
-  #         key: ${{ runner.os }}-gradle-caches-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-gradle-caches-
+      - name: Cache gradle dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-caches-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-caches-
 
-  #     - name: Make gradlew executable
-  #       run: cd android && chmod +x ./gradlew
+      - name: Make gradlew executable
+        run: cd android && chmod +x ./gradlew
 
-  #     ## build apk
-  #     - name: Build Android release .apk
-  #       run: |
-  #         cd android && ./gradlew assembleRelease --no-daemon && cd ..
+      ## build apk
+      - name: Build Android release .apk
+        run: |
+          cd android && ./gradlew assembleRelease --no-daemon && cd ..
 
-  #     ## sign apk
-  #     - name: Sign .apk
-  #       id: sign_apk
-  #       uses: r0adkll/sign-android-release@v1
-  #       with:
-  #         releaseDirectory: android/app/build/outputs/apk/release
-  #         signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
-  #         alias: ${{ secrets.ANDROID_ALIAS }}
-  #         keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
-  #         keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      ## sign apk
+      - name: Sign .apk
+        id: sign_apk
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: android/app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+          alias: ${{ secrets.ANDROID_ALIAS }}
+          keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-  #     ## build aab
-  #     - name: Build Android release .aab
-  #       run: |
-  #         cd android && ./gradlew bundleRelease --no-daemon
+      ## build aab
+      - name: Build Android release .aab
+        run: |
+          cd android && ./gradlew bundleRelease --no-daemon
 
-  #     ## sign aab
-  #     - name: Sign .aab
-  #       id: sign_aab
-  #       uses: r0adkll/sign-android-release@v1
-  #       with:
-  #         releaseDirectory: android/app/build/outputs/bundle/release
-  #         signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
-  #         alias: ${{ secrets.ANDROID_ALIAS }}
-  #         keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
-  #         keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      ## sign aab
+      - name: Sign .aab
+        id: sign_aab
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: android/app/build/outputs/bundle/release
+          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+          alias: ${{ secrets.ANDROID_ALIAS }}
+          keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
   ios-build:
     name: iOS build
