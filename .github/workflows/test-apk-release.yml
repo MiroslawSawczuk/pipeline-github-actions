@@ -150,7 +150,7 @@ jobs:
       - name: upload artefact to App Center
         uses: wzieba/AppCenter-Github-Action@v1
         with:
-          appName: Mirek Saw/pipeline
+          appName: Mirek Saw/pipeline-android
           token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
           group: testers-android
           file: pipeline-${{ github.run_number }}.apk
