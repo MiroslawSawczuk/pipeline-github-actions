@@ -166,8 +166,8 @@ jobs:
             ${{ runner.os }}-pods-
 
       - name: Install pods dependencies
-        run: cd ios && pod install --repo-update
+        run: cd ios && pod install --repo-update && cd ..
 
       ## build ipa
-      - name: Build and sign iOS release .ipa
-        run: npm run ios
+      - name: Build iOS
+        run: npm run ios:release
