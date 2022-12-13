@@ -204,10 +204,11 @@ jobs:
           code-signing-identity: "iPhone Distribution"
           team-id: ${{ secrets.IOS_TEAM_ID }}
           certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          output-path: "pipeline.ipa"
 
       ## upload artifact ipa to GHA
       - name: Artifact .ipa upload to GHA
         uses: actions/upload-artifact@v3
         with:
           name: "pipeline-${{ github.run_number }}.ipa"
-          path: /Users/runner/work/pipeline/pipeline/*.ipa
+          path: "pipeline.ipa"

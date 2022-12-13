@@ -102,13 +102,6 @@ jobs:
   #         keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
   #         keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-  #     ## upload artifact apk to GHA
-  #     - name: Artifact .apk upload to GHA
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: "pipeline-${{ github.run_number }}.apk"
-  #         path: android/app/build/outputs/apk/release/*.apk
-
   #     ## build aab
   #     - name: Build Android release .aab
   #       run: |
@@ -124,13 +117,6 @@ jobs:
   #         alias: ${{ secrets.ANDROID_ALIAS }}
   #         keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
   #         keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
-
-  #     ## upload artifact aab to GHA
-  #     - name: Artifact .abb upload to GHA
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: "pipeline-${{ github.run_number }}.aab"
-  #         path: android/app/build/outputs/bundle/release/*.aab
 
   ios-build:
     name: iOS build
@@ -185,10 +171,3 @@ jobs:
       ## build ipa
       - name: Build and sign iOS release .ipa
         run: npm run ios
-
-      ## upload artifact ipa to GHA
-      - name: Artifact .ipa upload to GHA
-        uses: actions/upload-artifact@v3
-        with:
-          name: "pipeline-${{ github.run_number }}.ipa"
-          path: /Users/runner/work/pipeline/pipeline/*.ipa
