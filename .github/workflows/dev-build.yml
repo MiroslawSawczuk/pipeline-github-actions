@@ -97,12 +97,12 @@ jobs:
       - name: Make gradlew executable
         run: cd android && chmod +x ./gradlew
 
-      ## build apk
+      ## build .apk
       - name: Build Android release .apk
         run: |
           cd android && ./gradlew assembleRelease --no-daemon && cd ..
 
-      ## sign apk
+      ## sign .apk
       - name: Sign .apk
         id: sign_apk
         uses: r0adkll/sign-android-release@v1
@@ -113,12 +113,12 @@ jobs:
           keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-      ## build aab
+      ## build .aab
       - name: Build Android release .aab
         run: |
           cd android && ./gradlew bundleRelease --no-daemon
 
-      ## sign aab
+      ## sign .aab
       - name: Sign .aab
         id: sign_aab
         uses: r0adkll/sign-android-release@v1
@@ -179,6 +179,6 @@ jobs:
       - name: Install pods dependencies
         run: cd ios && pod install --repo-update && cd ..
 
-      ## build ipa
-      - name: Build iOS
+      ## build .ipa
+      - name: Build .ipa
         run: npm run ios:release
