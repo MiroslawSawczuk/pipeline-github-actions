@@ -116,7 +116,7 @@ jobs:
 
       - uses: actions/cache@v3
         with:
-          path: android/app/build/outputs/apk/release/*.apk
+          path: ${{steps.sign_apk.outputs.signedReleaseFile}}
           key: my_file
 
       # ## build .aab
@@ -232,7 +232,7 @@ jobs:
     steps:
       - uses: actions/cache@v3
         with:
-          path: android/app/build/outputs/apk/release/*.apk
+          path: file_path
           key: my_file
 
       ## distribute .apk to AppCentre
@@ -242,7 +242,7 @@ jobs:
           appName: kdrtoolkit-gmail.com/pipeline-android
           token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
           group: testers-android
-          file: android/app/build/outputs/apk/release/*.apk
+          file: file_path
           notifyTesters: true
           debug: false
           releaseNotes: "Test .apk"
