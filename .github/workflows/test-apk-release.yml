@@ -41,7 +41,7 @@ jobs:
         run: yarn test
 
   build-android:
-    name: build Android
+    name: Build Android
     needs: install-and-test
     runs-on: ubuntu-latest
     steps:
@@ -145,7 +145,7 @@ jobs:
           releaseNotes: "Test .apk"
 
   build-ios:
-    name: build iOS
+    name: Build iOS
     needs: install-and-test
     runs-on: macos-latest
 
@@ -215,9 +215,9 @@ jobs:
           name: pipeline-${{ github.run_number }}.ipa
           path: pipeline.ipa_path
 
-  app-centre-distribute:
-    name: Distribute apps to AppCentre
-    needs: [build-android, build-ios]
+  app-centre-distribute-android:
+    name: Distribute android to AppCentre
+    needs: build-android
     runs-on: ubuntu-latest
 
     steps:
@@ -239,6 +239,14 @@ jobs:
           notifyTesters: true
           debug: false
           releaseNotes: "Test .apk"
+
+  app-centre-distribute-ios:
+    name: Distribute ios to AppCentre
+    needs: build-ios
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
 
       ## download .ipa
       - uses: actions/download-artifact@v2
