@@ -212,7 +212,7 @@ jobs:
             ${{ runner.os }}-pods-
 
       - name: Install pods dependencies
-        run: cd ios && pod install --repo-update && cd ..
+        run: cd ios && pod install --repo-update
 
       ## build, sign and distribute .ipa to TestFilght
       - name: Build, sign and distribute .ipa to TestFilght
