@@ -47,6 +47,10 @@ jobs:
     name: Build Android
     # needs: install-and-test
     runs-on: ubuntu-latest
+
+    outputs:
+      pipeline_apk: ${{steps.sign_apk.outputs.signedReleaseFile}}
+
     steps:
       ## prepare environment with cashing
       - name: Repo checkout
@@ -224,14 +228,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-
-      ## download .apk
-      - uses: actions/download-artifact@v3
-        with:
-          name: ${{ env.FILE_NAME }}.apk
-          path: ${{ env.FILE_NAME }}.apk
-
       ## distribute .apk to AppCentre
       - name: Distribute .apk to AppCenter
         uses: wzieba/AppCenter-Github-Action@v1
@@ -239,7 +235,7 @@ jobs:
           appName: kdrtoolkit-gmail.com/pipeline-android
           token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
           group: testers-android
-          file: ${{steps.sign_apk.outputs.signedReleaseFile}}
+          file: ${{needs.build-android.outputs.pipeline_apk}}
           notifyTesters: true
           debug: false
           releaseNotes: "Test .apk"
