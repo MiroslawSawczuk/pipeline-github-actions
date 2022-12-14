@@ -117,13 +117,6 @@ jobs:
           name: ${{ env.FILE_NAME }}.apk
           path: android/app/build/outputs/apk/release/*.apk
 
-      # - name: Cache .apk
-      #   id: cache-apk
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: ${{steps.sign_apk.outputs.signedReleaseFile}}
-      #     key: my_file
-
       # ## build .aab
       # - name: Build Android release .aab
       #   run: |
@@ -157,6 +150,17 @@ jobs:
       #     groups: testers
       #     file: ${{steps.sign_apk.outputs.signedReleaseFile}}
       #     releaseNotes: "Test .apk"
+
+      ## distribute apk to AppCentre
+      - name: Distribute .apk to App Center
+        uses: wzieba/AppCenter-Github-Action@v1
+        with:
+          appName: kdrtoolkit-gmail.com/pipeline-android
+          token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
+          group: testers-android
+          file: android/app/build/outputs/apk/release/app-release-unsigned.apk
+          notifyTesters: true
+          debug: false
 
   # build-ios:
   #   name: Build iOS
@@ -230,21 +234,28 @@ jobs:
   #         path: pipeline.ipa_path
 
   app-centre-distribute-android:
-    name: Distribute Android to AppCentre
+    name: Distribute Android to Firebase
     needs: build-android
     runs-on: ubuntu-latest
 
     steps:
-      ## distribute .apk to AppCentre
-      - name: Distribute .apk to AppCenter
-        uses: wzieba/AppCenter-Github-Action@v1
+      - uses: actions/checkout@v3
+
+      ## download .ipa
+      - uses: actions/download-artifact@v2
         with:
-          appName: kdrtoolkit-gmail.com/pipeline-android
-          token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
-          group: testers-android
-          file: ${{needs.build-android.outputs.pipeline_apk}}
-          notifyTesters: true
-          debug: false
+          name: ${{ env.FILE_NAME }}.apk
+          path: ${{ env.FILE_NAME }}.apk_path
+
+      ## distribute .apk to Firebase app distribution
+      - name: Distribute .apk to Firebase app distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
+        with:
+          appId: ${{secrets.ANDROID_FIREBASE_APP_ID}}
+          token: ${{secrets.ANDROID_FIREBASE_TOKEN}} # TODO in future token will stop working and will nedd to be changed to serviceCredentialsFileContent
+          # serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
+          groups: testers
+          file: ${{ env.FILE_NAME }}.apk_path
           releaseNotes: "Test .apk"
 
   # app-centre-distribute-ios:
