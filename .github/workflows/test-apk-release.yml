@@ -153,7 +153,7 @@ jobs:
           appName: kdrtoolkit-gmail.com/pipeline-android
           token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
           group: testers-android
-          file: android/app/build/outputs/apk/release/*.apk
+          file: app/build/outputs/apk/release/app-release-unsigned.apk
           notifyTesters: true
           debug: false
 
