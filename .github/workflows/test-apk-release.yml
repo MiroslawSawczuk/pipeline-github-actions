@@ -114,7 +114,9 @@ jobs:
           name: ${{ env.FILE_NAME }}.apk
           path: android/app/build/outputs/apk/release/*.apk
 
-      - uses: actions/cache@v3
+      - name: Cache .apk
+        id: cache-apk
+        uses: actions/cache@v3
         with:
           path: ${{steps.sign_apk.outputs.signedReleaseFile}}
           key: my_file
@@ -242,7 +244,7 @@ jobs:
           appName: kdrtoolkit-gmail.com/pipeline-android
           token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
           group: testers-android
-          file: file_path
+          file: steps.cache-apk.outputs
           notifyTesters: true
           debug: false
           releaseNotes: "Test .apk"
