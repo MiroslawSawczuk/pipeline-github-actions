@@ -231,6 +231,7 @@ jobs:
 
       ## distribute .apk to AppCentre
       - name: Distribute .apk to AppCenter
+        run: echo pipeline-${{ github.run_number }}.apk_path
         uses: wzieba/AppCenter-Github-Action@v1
         with:
           appName: kdrtoolkit-gmail.com/pipeline-android
