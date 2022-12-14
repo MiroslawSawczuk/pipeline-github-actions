@@ -43,124 +43,9 @@ jobs:
   #     - name: Run unit tests
   #       run: yarn test
 
-  android-build:
-    name: Android build
-    runs-on: ubuntu-latest
-    steps:
-      ## prepare environment with cashing
-      - name: Repo checkout
-        uses: actions/checkout@v3
-
-      - name: Install node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16.15.0
-
-      ## cache node modules
-      - name: Find yarn cache
-        id: yarn-cache-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-
-      - name: Restore yarn cache
-        uses: actions/cache@v2
-        with:
-          path: ${{ steps.yarn-cache-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: ${{ runner.os }}-yarn-
-
-      - name: Install npm dependencies
-        run: yarn install --immutable
-
-      ## cache gradle
-      - name: Cache gradle wrapper
-        uses: actions/cache@v2
-        with:
-          path: ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-
-      - name: Cache gradle dependencies
-        uses: actions/cache@v2
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-caches-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-caches-
-
-      - name: Make gradlew executable
-        run: cd android && chmod +x ./gradlew
-
-      ## build apk
-      - name: Build Android release .apk
-        run: |
-          cd android && ./gradlew assembleRelease --no-daemon && cd ..
-
-      ## sign apk
-      - name: Sign .apk
-        id: sign_apk
-        uses: r0adkll/sign-android-release@v1
-        with:
-          releaseDirectory: android/app/build/outputs/apk/release
-          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
-          alias: ${{ secrets.ANDROID_ALIAS }}
-          keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
-
-      ## upload artifact apk to GHA
-      - name: Artifact .apk upload to GHA
-        uses: actions/upload-artifact@v3
-        with:
-          name: pipeline-${{ github.run_number }}.apk
-          path: android/app/build/outputs/apk/release/*.apk
-
-      # ## build aab
-      # - name: Build Android release .aab
-      #   run: |
-      #     cd android && ./gradlew bundleRelease --no-daemon
-
-      # ## sign aab
-      # - name: Sign .aab
-      #   id: sign_aab
-      #   uses: r0adkll/sign-android-release@v1
-      #   with:
-      #     releaseDirectory: android/app/build/outputs/bundle/release
-      #     signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
-      #     alias: ${{ secrets.ANDROID_ALIAS }}
-      #     keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
-      #     keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
-
-      # ## upload artifact aab to GHA
-      # - name: Artifact .abb upload to GHA
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: "pipeline-${{ github.run_number }}.aab"
-      #     path: android/app/build/outputs/bundle/release/*.aab
-
-      # ## distribute apk to Firebase app distribution
-      # - name: Upload .apk to Firebase App Distribution
-      #   uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
-      #   with:
-      #     appId: ${{secrets.ANDROID_FIREBASE_APP_ID}}
-      #     token: ${{secrets.ANDROID_FIREBASE_TOKEN}} # TODO in future token will stop working and will nedd to be changed to serviceCredentialsFileContent
-      #     # serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
-      #     groups: testers
-      #     file: ${{steps.sign_apk.outputs.signedReleaseFile}}
-      #     releaseNotes: "Test .apk"
-
-      ## distribute apk to AppCentre
-      - name: upload artefact to App Center
-        uses: wzieba/AppCenter-Github-Action@v1
-        with:
-          appName: kdrtoolkit-gmail.com/pipeline-android
-          token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
-          group: testers-android
-          file: android/app/build/outputs/apk/release/app-release-unsigned.apk
-          notifyTesters: true
-          debug: false
-
-  # ios-build:
-  #   name: iOS build
-  #   runs-on: macos-latest
-
+  # android-build:
+  #   name: Android build
+  #   runs-on: ubuntu-latest
   #   steps:
   #     ## prepare environment with cashing
   #     - name: Repo checkout
@@ -186,43 +71,169 @@ jobs:
   #     - name: Install npm dependencies
   #       run: yarn install --immutable
 
-  #     ## cache pods
-  #     - name: Setup Ruby
-  #       uses: ruby/setup-ruby@v1
-  #       with:
-  #         ruby-version: "2.7.5"
-  #         bundler-cache: true
-
-  #     - name: Restore pods cache
+  #     ## cache gradle
+  #     - name: Cache gradle wrapper
   #       uses: actions/cache@v2
   #       with:
-  #         path: |
-  #           ios/Pods
-  #           ~/Library/Caches/CocoaPods
-  #           ~/.cocoapods
-  #         key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-pods-
+  #         path: ~/.gradle/wrapper
+  #         key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
 
-  #     - name: Install pods dependencies
-  #       run: cd ios && pod install --repo-update
-
-  #     ## build ipa and upload to TestFlight
-  #     - name: Build and sign iOS release .ipa
-  #       uses: yukiarrr/ios-build-action@v1.4.0
+  #     - name: Cache gradle dependencies
+  #       uses: actions/cache@v2
   #       with:
-  #         project-path: ios/pipeline.xcodeproj
-  #         workspace-path: ios/pipeline.xcworkspace
-  #         mobileprovision-base64: ${{ secrets.IOS_MOBILE_PROVISION_BASE64 }}
-  #         p12-base64: ${{ secrets.IOS_P12_BASE64 }}
-  #         code-signing-identity: "iPhone Distribution"
-  #         team-id: ${{ secrets.IOS_TEAM_ID }}
-  #         certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
-  #         output-path: "pipeline.ipa"
+  #         path: ~/.gradle/caches
+  #         key: ${{ runner.os }}-gradle-caches-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-gradle-caches-
 
-  #     ## upload artifact ipa to GHA
-  #     - name: Artifact .ipa upload to GHA
+  #     - name: Make gradlew executable
+  #       run: cd android && chmod +x ./gradlew
+
+  #     ## build apk
+  #     - name: Build Android release .apk
+  #       run: |
+  #         cd android && ./gradlew assembleRelease --no-daemon && cd ..
+
+  #     ## sign apk
+  #     - name: Sign .apk
+  #       id: sign_apk
+  #       uses: r0adkll/sign-android-release@v1
+  #       with:
+  #         releaseDirectory: android/app/build/outputs/apk/release
+  #         signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+  #         alias: ${{ secrets.ANDROID_ALIAS }}
+  #         keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+  #         keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+  #     ## upload artifact apk to GHA
+  #     - name: Upload artifact .apk to GHA
   #       uses: actions/upload-artifact@v3
   #       with:
-  #         name: "pipeline-${{ github.run_number }}.ipa"
-  #         path: "pipeline.ipa"
+  #         name: pipeline-${{ github.run_number }}.apk
+  #         path: android/app/build/outputs/apk/release/*.apk
+
+  #     ## build aab
+  #     - name: Build Android release .aab
+  #       run: |
+  #         cd android && ./gradlew bundleRelease --no-daemon
+
+  #     ## sign aab
+  #     - name: Sign .aab
+  #       id: sign_aab
+  #       uses: r0adkll/sign-android-release@v1
+  #       with:
+  #         releaseDirectory: android/app/build/outputs/bundle/release
+  #         signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+  #         alias: ${{ secrets.ANDROID_ALIAS }}
+  #         keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+  #         keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+  #     ## upload artifact aab to GHA
+  #     - name: Upload artifact .abb to GHA
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: "pipeline-${{ github.run_number }}.aab"
+  #         path: android/app/build/outputs/bundle/release/*.aab
+
+  #     ## distribute apk to Firebase app distribution
+  #     - name: Distribute .apk to Firebase app distribution
+  #       uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
+  #       with:
+  #         appId: ${{secrets.ANDROID_FIREBASE_APP_ID}}
+  #         token: ${{secrets.ANDROID_FIREBASE_TOKEN}} # TODO in future token will stop working and will nedd to be changed to serviceCredentialsFileContent
+  #         # serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
+  #         groups: testers
+  #         file: ${{steps.sign_apk.outputs.signedReleaseFile}}
+  #         releaseNotes: "Test .apk"
+
+  #     ## distribute apk to AppCentre
+  #     - name: Distribute .apk to AppCenter
+  #       uses: wzieba/AppCenter-Github-Action@v1
+  #       with:
+  #         appName: kdrtoolkit-gmail.com/pipeline-android
+  #         token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
+  #         group: testers-android
+  #         file: android/app/build/outputs/apk/release/app-release-unsigned.apk
+  #         notifyTesters: true
+  #         debug: false
+
+  ios-build:
+    name: iOS build
+    runs-on: macos-latest
+
+    steps:
+      ## prepare environment with cashing
+      - name: Repo checkout
+        uses: actions/checkout@v3
+
+      - name: Install node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.15.0
+
+      ## cache node modules
+      - name: Find yarn cache
+        id: yarn-cache-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: Restore yarn cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.yarn-cache-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
+
+      - name: Install npm dependencies
+        run: yarn install --immutable
+
+      ## cache pods
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "2.7.5"
+          bundler-cache: true
+
+      - name: Restore pods cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ios/Pods
+            ~/Library/Caches/CocoaPods
+            ~/.cocoapods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Install pods dependencies
+        run: cd ios && pod install --repo-update
+
+      ## build, sign and distribute iOS release ipa to TestFilght
+      - name: Build, sign and distribute iOS release .ipa to TestFilght
+        uses: yukiarrr/ios-build-action@v1.4.0
+        with:
+          project-path: ios/pipeline.xcodeproj
+          workspace-path: ios/pipeline.xcworkspace
+          mobileprovision-base64: ${{ secrets.IOS_MOBILE_PROVISION_BASE64 }}
+          p12-base64: ${{ secrets.IOS_P12_BASE64 }}
+          code-signing-identity: "iPhone Distribution"
+          team-id: ${{ secrets.IOS_TEAM_ID }}
+          certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          output-path: pipeline.ipa
+
+      ## upload artifact ipa to GHA
+      - name: Artifact .ipa upload to GHA
+        uses: actions/upload-artifact@v3
+        with:
+          name: pipeline-${{ github.run_number }}.ipa
+          path: pipeline.ipa
+
+      ## distribute ipa to AppCentre
+      - name: Distribute .ipa to AppCenter
+        uses: wzieba/AppCenter-Github-Action@v1
+        with:
+          appName: kdrtoolkit-gmail.com/pipeline-ios
+          token: ${{secrets.APP_CENTER_TOKEN_IOS}}
+          group: testers-ios
+          file: pipeline.ipa
+          notifyTesters: true
+          debug: false
