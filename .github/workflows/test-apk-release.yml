@@ -9,47 +9,44 @@ env:
   FILE_NAME: pipeline-${{ github.run_number }}
 
 jobs:
-  # install-and-test:
-  #   name: Install and test
-  #   runs-on: ubuntu-latest
+  install-and-test:
+    name: Install and test
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     ## prepare environment with cashing
-  #     - name: Repo checkout
-  #       uses: actions/checkout@v3
+    steps:
+      ## prepare environment with cashing
+      - name: Repo checkout
+        uses: actions/checkout@v3
 
-  #     - name: Install node.js
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 16.15.0
+      - name: Install node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.15.0
 
-  #     - name: Find yarn cache
-  #       id: yarn-cache-path
-  #       run: echo "::set-output name=dir::$(yarn cache dir)"
+      - name: Find yarn cache
+        id: yarn-cache-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
 
-  #     - name: Restore yarn cache
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: ${{ steps.yarn-cache-path.outputs.dir }}
-  #         key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-  #         restore-keys: ${{ runner.os }}-yarn-
+      - name: Restore yarn cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.yarn-cache-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
 
-  #     - name: Install npm dependencies
-  #       run: yarn install --immutable
+      - name: Install npm dependencies
+        run: yarn install --immutable
 
-  #     - name: Linting check
-  #       run: yarn lint:fix
+      - name: Linting check
+        run: yarn lint:fix
 
-  #     - name: Run unit tests
-  #       run: yarn test
+      - name: Run unit tests
+        run: yarn test
 
   build-android:
     name: Build Android
-    # needs: install-and-test
+    needs: install-and-test
     runs-on: ubuntu-latest
-
-    outputs:
-      pipeline_apk: ${{steps.sign_apk.outputs.signedReleaseFile}}
 
     steps:
       ## prepare environment with cashing
@@ -117,123 +114,112 @@ jobs:
           name: ${{ env.FILE_NAME }}.apk
           path: android/app/build/outputs/apk/release/*.apk
 
-      # ## build .aab
-      # - name: Build Android release .aab
-      #   run: |
-      #     cd android && ./gradlew bundleRelease --no-daemon
+      ## build .aab
+      - name: Build Android release .aab
+        run: |
+          cd android && ./gradlew bundleRelease --no-daemon
 
-      # ## sign .aab
-      # - name: Sign .aab
-      #   id: sign_aab
-      #   uses: r0adkll/sign-android-release@v1
-      #   with:
-      #     releaseDirectory: android/app/build/outputs/bundle/release
-      #     signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
-      #     alias: ${{ secrets.ANDROID_ALIAS }}
-      #     keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
-      #     keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
-
-      # ## upload artifact .aab to GHA
-      # - name: Upload artifact .abb to GHA
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: pipeline-${{ github.run_number }}.aab
-      #     path: android/app/build/outputs/bundle/release/*.aab
-
-      # ## distribute .apk to Firebase app distribution
-      # - name: Distribute .apk to Firebase app distribution
-      #   uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
-      #   with:
-      #     appId: ${{secrets.ANDROID_FIREBASE_APP_ID}}
-      #     token: ${{secrets.ANDROID_FIREBASE_TOKEN}} # TODO in future token will stop working and will nedd to be changed to serviceCredentialsFileContent
-      #     # serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
-      #     groups: testers
-      #     file: ${{steps.sign_apk.outputs.signedReleaseFile}}
-      #     releaseNotes: "Test .apk"
-
-      ## distribute apk to AppCentre
-      - name: Distribute .apk to App Center
-        uses: wzieba/AppCenter-Github-Action@v1
+      ## sign .aab
+      - name: Sign .aab
+        id: sign_aab
+        uses: r0adkll/sign-android-release@v1
         with:
-          appName: kdrtoolkit-gmail.com/pipeline-android
-          token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
-          group: testers-android
-          file: android/app/build/outputs/apk/release/app-release-unsigned.apk
-          notifyTesters: true
-          debug: false
+          releaseDirectory: android/app/build/outputs/bundle/release
+          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+          alias: ${{ secrets.ANDROID_ALIAS }}
+          keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-  # build-ios:
-  #   name: Build iOS
-  #   needs: install-and-test
-  #   runs-on: macos-latest
+      ## upload artifact .aab to GHA
+      - name: Upload artifact .abb to GHA
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.FILE_NAME }}.aab
+          path: android/app/build/outputs/bundle/release/*.aab
 
-  #   steps:
-  #     ## prepare environment with cashing
-  #     - name: Repo checkout
-  #       uses: actions/checkout@v3
+      # ## distribute apk to AppCentre
+      # - name: Distribute .apk to App Center
+      #   uses: wzieba/AppCenter-Github-Action@v1
+      #   with:
+      #     appName: kdrtoolkit-gmail.com/pipeline-android
+      #     token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
+      #     group: testers-android
+      #     file: android/app/build/outputs/apk/release/app-release-unsigned.apk
+      #     notifyTesters: true
+      #     debug: false
 
-  #     - name: Install node.js
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 16.15.0
+  build-ios:
+    name: Build iOS
+    needs: install-and-test
+    runs-on: macos-latest
 
-  #     ## cache node modules
-  #     - name: Find yarn cache
-  #       id: yarn-cache-path
-  #       run: echo "::set-output name=dir::$(yarn cache dir)"
+    steps:
+      ## prepare environment with cashing
+      - name: Repo checkout
+        uses: actions/checkout@v3
 
-  #     - name: Restore yarn cache
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: ${{ steps.yarn-cache-path.outputs.dir }}
-  #         key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-  #         restore-keys: ${{ runner.os }}-yarn-
+      - name: Install node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.15.0
 
-  #     - name: Install npm dependencies
-  #       run: yarn install --immutable
+      ## cache node modules
+      - name: Find yarn cache
+        id: yarn-cache-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
 
-  #     ## cache pods
-  #     - name: Setup Ruby
-  #       uses: ruby/setup-ruby@v1
-  #       with:
-  #         ruby-version: "2.7.5"
-  #         bundler-cache: true
+      - name: Restore yarn cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.yarn-cache-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
 
-  #     - name: Restore pods cache
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: |
-  #           ios/Pods
-  #           ~/Library/Caches/CocoaPods
-  #           ~/.cocoapods
-  #         key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-pods-
+      - name: Install npm dependencies
+        run: yarn install --immutable
 
-  #     - name: Install pods dependencies
-  #       run: cd ios && pod install --repo-update && cd ..
+      ## cache pods
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "2.7.5"
+          bundler-cache: true
 
-  #     ## build, sign and distribute .ipa to TestFilght
-  #     - name: Build, sign and distribute .ipa to TestFilght
-  #       uses: yukiarrr/ios-build-action@v1.4.0
-  #       with:
-  #         project-path: ios/pipeline.xcodeproj
-  #         workspace-path: ios/pipeline.xcworkspace
-  #         mobileprovision-base64: ${{ secrets.IOS_MOBILE_PROVISION_BASE64 }}
-  #         p12-base64: ${{ secrets.IOS_P12_BASE64 }}
-  #         code-signing-identity: "iPhone Distribution"
-  #         team-id: ${{ secrets.IOS_TEAM_ID }}
-  #         certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
-  #         output-path: pipeline.ipa_path
+      - name: Restore pods cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ios/Pods
+            ~/Library/Caches/CocoaPods
+            ~/.cocoapods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
 
-  #     ## upload artifact .ipa to GHA
-  #     - name: Upload artifact .ipa to GHA
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: pipeline-${{ github.run_number }}.ipa
-  #         path: pipeline.ipa_path
+      - name: Install pods dependencies
+        run: cd ios && pod install --repo-update && cd ..
 
-  app-centre-distribute-android:
+      ## build, sign and distribute .ipa to TestFilght
+      - name: Build, sign and distribute .ipa to TestFilght
+        uses: yukiarrr/ios-build-action@v1.4.0
+        with:
+          project-path: ios/pipeline.xcodeproj
+          workspace-path: ios/pipeline.xcworkspace
+          mobileprovision-base64: ${{ secrets.IOS_MOBILE_PROVISION_BASE64 }}
+          p12-base64: ${{ secrets.IOS_P12_BASE64 }}
+          code-signing-identity: "iPhone Distribution"
+          team-id: ${{ secrets.IOS_TEAM_ID }}
+          certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          output-path: pipeline.ipa_path
+
+      ## upload artifact .ipa to GHA
+      - name: Upload artifact .ipa to GHA
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.FILE_NAME }}.ipa
+          path: pipeline.ipa_path
+
+  firebase-distribute-android:
     name: Distribute Android to Firebase
     needs: build-android
     runs-on: ubuntu-latest
@@ -252,34 +238,44 @@ jobs:
         uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
         with:
           appId: ${{secrets.ANDROID_FIREBASE_APP_ID}}
-          token: ${{secrets.ANDROID_FIREBASE_TOKEN}} # TODO in future token will stop working and will nedd to be changed to serviceCredentialsFileContent
+          token: ${{secrets.FIREBASE_TOKEN}} # TODO in future token will stop working and will nedd to be changed to serviceCredentialsFileContent
           # serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
-          groups: testers
+          groups: testers-android
           file: ${{ env.FILE_NAME }}.apk
           releaseNotes: "Test .apk"
 
-  # app-centre-distribute-ios:
-  #   name: Distribute iOS to AppCentre
-  #   needs: build-ios
-  #   runs-on: ubuntu-latest
+  firebase-distribute-ios:
+    name: Distribute iOS to AppCentre
+    needs: build-ios
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - uses: actions/checkout@v3
+    steps:
+      - uses: actions/checkout@v3
 
-  #     ## download .ipa
-  #     - uses: actions/download-artifact@v2
-  #       with:
-  #         name: pipeline-${{ github.run_number }}.ipa
-  #         path: pipeline-${{ github.run_number }}.ipa_path
+      ## download .ipa
+      - uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.FILE_NAME }}.ipa
+          # path: ${{ env.FILE_NAME }}.ipa
 
-  #     ## distribute .ipa to AppCentre
-  #     - name: Distribute .ipa to AppCenter
-  #       uses: wzieba/AppCenter-Github-Action@v1
-  #       with:
-  #         appName: kdrtoolkit-gmail.com/pipeline-ios
-  #         token: ${{secrets.APP_CENTER_TOKEN_IOS}}
-  #         group: testers-ios
-  #         file: pipeline-${{ github.run_number }}.ipa_path
-  #         notifyTesters: true
-  #         debug: false
-  #         releaseNotes: "Test .ipa"
+      ## distribute .ipa to Firebase app distribution
+      - name: Distribute .ipa to Firebase app distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
+        with:
+          appId: ${{secrets.IOS_FIREBASE_APP_ID}}
+          token: ${{secrets.FIREBASE_TOKEN}}
+          groups: testers-ios
+          file: ${{ env.FILE_NAME }}.ipa
+          releaseNotes: "Test .ipa"
+
+      # ## distribute .ipa to AppCentre
+      # - name: Distribute .ipa to AppCenter
+      #   uses: wzieba/AppCenter-Github-Action@v1
+      #   with:
+      #     appName: kdrtoolkit-gmail.com/pipeline-ios
+      #     token: ${{secrets.APP_CENTER_TOKEN_IOS}}
+      #     group: testers-ios
+      #     file: ${{ env.FILE_NAME }}.ipa
+      #     notifyTesters: true
+      #     debug: false
+      #     releaseNotes: "Test .ipa"
