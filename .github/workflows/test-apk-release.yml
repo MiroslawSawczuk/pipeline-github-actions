@@ -5,6 +5,8 @@ on:
     branches:
       - QA
 
+FILE_NAME: pipeline-${{ github.run_number }}
+
 jobs:
   # install-and-test:
   #   name: Install and test
@@ -103,12 +105,16 @@ jobs:
           keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
+      ## cache permissions to artifacts
+      - name: Tar files for cache permission
+        run: tar -cvf FILE_NAME.tar android/app/build/outputs/apk/release/*.apk
+
       ## upload artifact .apk to GHA
       - name: Upload artifact .apk to GHA
         uses: actions/upload-artifact@v3
         with:
-          name: pipeline-${{ github.run_number }}.apk
-          path: android/app/build/outputs/apk/release/*.apk
+          name: FILE_NAME.apk
+          path: FILE_NAME.tar
 
       # ## build .aab
       # - name: Build Android release .aab
@@ -224,10 +230,10 @@ jobs:
       - uses: actions/checkout@v3
 
       ## download .apk
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
-          name: pipeline-${{ github.run_number }}.apk
-          path: pipeline-${{ github.run_number }}.apk
+          name: FILE_NAME.apk
+          path: FILE_NAME.apk
 
       ## distribute .apk to AppCentre
       - name: Distribute .apk to AppCenter
@@ -236,7 +242,7 @@ jobs:
           appName: kdrtoolkit-gmail.com/pipeline-android
           token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
           group: testers-android
-          file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/pipeline-${{ github.run_number }}.apk
+          file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/FILE_NAME.apk
           notifyTesters: true
           debug: false
           releaseNotes: "Test .apk"
