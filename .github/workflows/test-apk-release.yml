@@ -106,12 +106,6 @@ jobs:
           keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-      - name: Artifact (with permissions)
-        uses: actions/cache@v2
-        with:
-          path: android/app/build/outputs/apk/release/*.apk
-          key: artifacts-${{ github.run_id }}-${{ github.run_number }}
-
       ## upload artifact .apk to GHA
       - name: Upload artifact .apk to GHA
         uses: actions/upload-artifact@v3
@@ -245,7 +239,7 @@ jobs:
           appName: kdrtoolkit-gmail.com/pipeline-android
           token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
           group: testers-android
-          file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/${{ env.FILE_NAME }}.apk
+          file: ${{steps.sign_apk.outputs.signedReleaseFile}}
           notifyTesters: true
           debug: false
           releaseNotes: "Test .apk"
