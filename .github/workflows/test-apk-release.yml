@@ -245,7 +245,7 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: ${{ env.FILE_NAME }}.apk
-          path: file_path
+          # path: ${{ env.FILE_NAME }}.apk
 
       ## distribute .apk to Firebase app distribution
       - name: Distribute .apk to Firebase app distribution
@@ -255,7 +255,7 @@ jobs:
           token: ${{secrets.ANDROID_FIREBASE_TOKEN}} # TODO in future token will stop working and will nedd to be changed to serviceCredentialsFileContent
           # serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
           groups: testers
-          file: file_path
+          file: ${{ env.FILE_NAME }}.apk
           releaseNotes: "Test .apk"
 
   # app-centre-distribute-ios:
