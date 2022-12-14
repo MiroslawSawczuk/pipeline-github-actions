@@ -227,10 +227,6 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: pipeline-${{ github.run_number }}.apk
-          path: pipeline-${{ github.run_number }}.apk_path
-
-      - name: Display
-        run: echo pipeline-${{ github.run_number }}.apk_path
 
       ## distribute .apk to AppCentre
       - name: Distribute .apk to AppCenter
@@ -239,7 +235,7 @@ jobs:
           appName: kdrtoolkit-gmail.com/pipeline-android
           token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
           group: testers-android
-          file: pipeline-${{ github.run_number }}.apk_path
+          file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/pipeline-${{ github.run_number }}.apk
           notifyTesters: true
           debug: false
           releaseNotes: "Test .apk"
