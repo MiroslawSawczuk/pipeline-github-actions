@@ -137,17 +137,6 @@ jobs:
           name: ${{ env.FILE_NAME }}.aab
           path: android/app/build/outputs/bundle/release/*.aab
 
-      # ## distribute apk to AppCentre
-      # - name: Distribute .apk to App Center
-      #   uses: wzieba/AppCenter-Github-Action@v1
-      #   with:
-      #     appName: kdrtoolkit-gmail.com/pipeline-android
-      #     token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
-      #     group: testers-android
-      #     file: android/app/build/outputs/apk/release/app-release-unsigned.apk
-      #     notifyTesters: true
-      #     debug: false
-
   build-ios:
     name: Build iOS
     needs: install-and-test
@@ -197,7 +186,7 @@ jobs:
             ${{ runner.os }}-pods-
 
       - name: Install pods dependencies
-        run: cd ios && pod install --repo-update && cd ..
+        run: cd ios && pod install --repo-update
 
       ## build, sign and distribute .ipa to TestFilght
       - name: Build, sign and distribute .ipa to TestFilght
@@ -210,14 +199,14 @@ jobs:
           code-signing-identity: "iPhone Distribution"
           team-id: ${{ secrets.IOS_TEAM_ID }}
           certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
-          output-path: "pipeline.ipa_path"
+          output-path: pipeline.ipa
 
       ## upload artifact .ipa to GHA
       - name: Upload artifact .ipa to GHA
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.FILE_NAME }}.ipa
-          path: "pipeline.ipa_path"
+          path: pipeline.ipa
 
   firebase-distribute-android:
     name: Distribute Android to Firebase
@@ -225,13 +214,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      ## repo checkout
+      - name: Repo checkout
+        uses: actions/checkout@v3
 
-      ## download .ipa
-      - uses: actions/download-artifact@v2
+      ## download .apk
+      - name: Download .apk
+        uses: actions/download-artifact@v3
         with:
           name: ${{ env.FILE_NAME }}.apk
-          # path: ${{ env.FILE_NAME }}.apk
 
       ## distribute .apk to Firebase app distribution
       - name: Distribute .apk to Firebase app distribution
@@ -250,13 +241,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      ## repo checkout
+      - name: Repo checkout
       - uses: actions/checkout@v3
 
       ## download .ipa
-      - uses: actions/download-artifact@v2
+      - name: Download .ipa
+      - uses: actions/download-artifact@v3
         with:
           name: ${{ env.FILE_NAME }}.ipa
-          # path: ${{ env.FILE_NAME }}.ipa
 
       ## distribute .ipa to Firebase app distribution
       - name: Distribute .ipa to Firebase app distribution
@@ -267,6 +260,17 @@ jobs:
           groups: testers-ios
           file: ${{ env.FILE_NAME }}.ipa
           releaseNotes: "Test .ipa"
+
+      # ## distribute apk to AppCentre
+      # - name: Distribute .apk to App Center
+      #   uses: wzieba/AppCenter-Github-Action@v1
+      #   with:
+      #     appName: kdrtoolkit-gmail.com/pipeline-android
+      #     token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
+      #     group: testers-android
+      #     file: android/app/build/outputs/apk/release/app-release-unsigned.apk
+      #     notifyTesters: true
+      #     debug: false
 
       # ## distribute .ipa to AppCentre
       # - name: Distribute .ipa to AppCenter
