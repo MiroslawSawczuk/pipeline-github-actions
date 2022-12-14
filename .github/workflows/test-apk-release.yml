@@ -244,7 +244,7 @@ jobs:
           appName: kdrtoolkit-gmail.com/pipeline-android
           token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
           group: testers-android
-          file: steps.cache-apk.outputs
+          file: ${{ steps.cache-apk.outputs }}
           notifyTesters: true
           debug: false
           releaseNotes: "Test .apk"
