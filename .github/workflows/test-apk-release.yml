@@ -106,16 +106,18 @@ jobs:
           keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-      ## cache permissions to artifacts
-      - name: Tar files for cache permission
-        run: tar -cvf ${{ env.FILE_NAME }}.tar android/app/build/outputs/apk/release/*.apk
+      - name: Artifact (with permissions)
+        uses: actions/cache@v2
+        with:
+          path: android/app/build/outputs/apk/release/*.apk
+          key: artifacts-${{ github.run_id }}-${{ github.run_number }}
 
       ## upload artifact .apk to GHA
       - name: Upload artifact .apk to GHA
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.FILE_NAME }}.apk
-          path: ${{ env.FILE_NAME }}.tar
+          path: android/app/build/outputs/apk/release/*.apk
 
       # ## build .aab
       # - name: Build Android release .aab
@@ -234,7 +236,7 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: ${{ env.FILE_NAME }}.apk
-          path: ${{ env.FILE_NAME }}.tar
+          path: ${{ env.FILE_NAME }}.apk
 
       ## distribute .apk to AppCentre
       - name: Distribute .apk to AppCenter
@@ -243,7 +245,7 @@ jobs:
           appName: kdrtoolkit-gmail.com/pipeline-android
           token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
           group: testers-android
-          file: ${{ env.FILE_NAME }}.tar
+          file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/${{ env.FILE_NAME }}.apk
           notifyTesters: true
           debug: false
           releaseNotes: "Test .apk"
