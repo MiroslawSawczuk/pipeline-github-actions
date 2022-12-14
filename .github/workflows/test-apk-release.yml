@@ -188,7 +188,7 @@ jobs:
       - name: Install pods dependencies
         run: cd ios && pod install --repo-update
 
-      ## build, sign and distribute .ipa to  TestFilght
+      ## build, sign and distribute .ipa to TestFilght
       - name: Build, sign and distribute .ipa to TestFilght
         uses: yukiarrr/ios-build-action@v1.4.0
         with:
@@ -243,11 +243,11 @@ jobs:
     steps:
       ## repo checkout
       - name: Repo checkout
-      - uses: actions/checkout@v3
+        uses: actions/checkout@v3
 
       ## download .ipa
       - name: Download .ipa
-      - uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v3
         with:
           name: ${{ env.FILE_NAME }}.ipa
 
