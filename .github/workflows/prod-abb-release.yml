@@ -84,12 +84,12 @@ jobs:
       - name: Make gradlew executable
         run: cd android && chmod +x ./gradlew
 
-      ## build apk
+      ## build .apk
       - name: Build Android release .apk
         run: |
           cd android && ./gradlew assembleRelease --no-daemon && cd ..
 
-      ## sign apk
+      ## sign .apk
       - name: Sign .apk
         id: sign_apk
         uses: r0adkll/sign-android-release@v1
@@ -100,19 +100,19 @@ jobs:
           keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-      ## upload artifact apk to GHA
-      - name: Artifact .apk upload to GHA
+      ## upload artifact .apk to GHA
+      - name: Upload artifact .apk to GHA
         uses: actions/upload-artifact@v3
         with:
-          name: "pipeline-${{ github.run_number }}.apk"
+          name: pipeline-${{ github.run_number }}.apk
           path: android/app/build/outputs/apk/release/*.apk
 
-      ## build aab
+      ## build .aab
       - name: Build Android release .aab
         run: |
           cd android && ./gradlew bundleRelease --no-daemon
 
-      ## sign aab
+      ## sign .aab
       - name: Sign .aab
         id: sign_aab
         uses: r0adkll/sign-android-release@v1
@@ -123,15 +123,15 @@ jobs:
           keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-      ## upload artifact aab to GHA
-      - name: Artifact .abb upload to GHA
+      ## upload artifact .aab to GHA
+      - name: Upload artifact .abb to GHA
         uses: actions/upload-artifact@v3
         with:
-          name: "pipeline-${{ github.run_number }}.aab"
+          name: pipeline-${{ github.run_number }}.aab
           path: android/app/build/outputs/bundle/release/*.aab
 
-      ## distribute apk to Firebase app distribution
-      - name: Upload .apk to Firebase App Distribution
+      ## distribute .apk to Firebase app distribution
+      - name: Distribute .apk to Firebase app distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
         with:
           appId: ${{secrets.ANDROID_FIREBASE_APP_ID}}
@@ -141,7 +141,19 @@ jobs:
           file: ${{steps.sign_apk.outputs.signedReleaseFile}}
           releaseNotes: "Release .apk"
 
-      ## distribute aab to Google play store
+      ## distribute .apk to AppCentre
+      - name: Distribute .apk to AppCenter
+        uses: wzieba/AppCenter-Github-Action@v1
+        with:
+          appName: kdrtoolkit-gmail.com/pipeline-android
+          token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
+          group: testers-android
+          file: android/app/build/outputs/apk/release/app-release-unsigned.apk
+          notifyTesters: true
+          debug: false
+          releaseNotes: "Release .apk"
+
+      ## distribute .aab to Google play store
       - name: Upload .abb to Google play store
         uses: r0adkll/upload-google-play@v1
         with:
@@ -200,10 +212,10 @@ jobs:
             ${{ runner.os }}-pods-
 
       - name: Install pods dependencies
-        run: cd ios && pod install --repo-update
+        run: cd ios && pod install --repo-update && cd ..
 
-      ## build ipa and upload to TestFlight
-      - name: Build and sign iOS release .ipa
+      ## build, sign and distribute .ipa to TestFilght
+      - name: Build, sign and distribute .ipa to TestFilght
         uses: yukiarrr/ios-build-action@v1.4.0
         with:
           project-path: ios/pipeline.xcodeproj
@@ -213,11 +225,23 @@ jobs:
           code-signing-identity: "iPhone Distribution"
           team-id: ${{ secrets.IOS_TEAM_ID }}
           certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
-          output-path: "pipeline.ipa"
+          output-path: pipeline.ipa_path
 
-      ## upload artifact ipa to GHA
-      - name: Artifact .ipa upload to GHA
+      ## upload artifact .ipa to GHA
+      - name: Ulopad artifact .ipa to GHA
         uses: actions/upload-artifact@v3
         with:
-          name: "pipeline-${{ github.run_number }}.ipa"
-          path: "pipeline.ipa"
+          name: pipeline-${{ github.run_number }}.ipa
+          path: pipeline.ipa_path
+
+      ## distribute .ipa to AppCentre
+      - name: Distribute .ipa to AppCenter
+        uses: wzieba/AppCenter-Github-Action@v1
+        with:
+          appName: kdrtoolkit-gmail.com/pipeline-ios
+          token: ${{secrets.APP_CENTER_TOKEN_IOS}}
+          group: testers-ios
+          file: pipeline.ipa_path
+          notifyTesters: true
+          debug: false
+          releaseNotes: "Release .ipa"
