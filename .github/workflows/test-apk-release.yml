@@ -109,10 +109,10 @@ jobs:
 
       ## upload artifact .apk to GHA
       - name: Upload artifact .apk to GHA
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: ${{ env.FILE_NAME }}.apk
-          path: ${{steps.sign_apk.outputs.pipeline}}
+          path: ${{steps.sign_apk.outputs.signedReleaseFile}}
 
       # ## build .aab
       # - name: Build Android release .aab
