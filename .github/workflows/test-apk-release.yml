@@ -226,6 +226,10 @@ jobs:
           name: ${{ env.FILE_NAME }}.apk
           path: path_apk
 
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: path_apk
+
       ## distribute .apk to Firebase app distribution
       - name: Distribute .apk to Firebase app distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
