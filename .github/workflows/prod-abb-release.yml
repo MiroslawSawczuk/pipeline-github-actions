@@ -3,6 +3,9 @@ run-name: ${{ github.actor }} triggered manually prod release - ${{ github.ref }
 on:
   workflow_dispatch:
 
+env:
+  FILE_NAME: pipeline-${{ github.run_number }}
+
 jobs:
   install-and-test:
     name: Install and test
@@ -38,9 +41,11 @@ jobs:
       - name: Run unit tests
         run: yarn test
 
-  android-build:
-    name: Android build
+  build-android:
+    name: Build Android
+    needs: install-and-test
     runs-on: ubuntu-latest
+
     steps:
       ## prepare environment with cashing
       - name: Repo checkout
@@ -104,7 +109,7 @@ jobs:
       - name: Upload artifact .apk to GHA
         uses: actions/upload-artifact@v3
         with:
-          name: pipeline-${{ github.run_number }}.apk
+          name: ${{ env.FILE_NAME }}.apk
           path: android/app/build/outputs/apk/release/*.apk
 
       ## build .aab
@@ -127,45 +132,12 @@ jobs:
       - name: Upload artifact .abb to GHA
         uses: actions/upload-artifact@v3
         with:
-          name: pipeline-${{ github.run_number }}.aab
+          name: ${{ env.FILE_NAME }}.aab
           path: android/app/build/outputs/bundle/release/*.aab
 
-      ## distribute .apk to Firebase app distribution
-      - name: Distribute .apk to Firebase app distribution
-        uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
-        with:
-          appId: ${{secrets.ANDROID_FIREBASE_APP_ID}}
-          token: ${{secrets.ANDROID_FIREBASE_TOKEN}} # TODO in future token will stop working and will nedd to be changed to serviceCredentialsFileContent
-          # serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
-          groups: testers
-          file: ${{steps.sign_apk.outputs.signedReleaseFile}}
-          releaseNotes: "Release .apk"
-
-      ## distribute .apk to AppCentre
-      - name: Distribute .apk to AppCenter
-        uses: wzieba/AppCenter-Github-Action@v1
-        with:
-          appName: kdrtoolkit-gmail.com/pipeline-android
-          token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
-          group: testers-android
-          file: android/app/build/outputs/apk/release/app-release-unsigned.apk
-          notifyTesters: true
-          debug: false
-          releaseNotes: "Release .apk"
-
-      ## distribute .aab to Google play store
-      - name: Upload .abb to Google play store
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON_TEXT }}
-          packageName: com.savczukinv.pipeline
-          releaseFiles: android/app/build/outputs/bundle/release/*.aab
-          track: production
-          status: draft
-          inAppUpdatePriority: 2
-
-  ios-build:
-    name: iOS build
+  build-ios:
+    name: Build iOS
+    needs: install-and-test
     runs-on: macos-latest
 
     steps:
@@ -225,23 +197,25 @@ jobs:
           code-signing-identity: "iPhone Distribution"
           team-id: ${{ secrets.IOS_TEAM_ID }}
           certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
-          output-path: "pipeline.ipa_path"
+          output-path: pipeline.ipa
 
       ## upload artifact .ipa to GHA
-      - name: Ulopad artifact .ipa to GHA
+      - name: Upload artifact .ipa to GHA
         uses: actions/upload-artifact@v3
         with:
-          name: pipeline-${{ github.run_number }}.ipa
+          name: ${{ env.FILE_NAME }}.ipa
           path: "pipeline.ipa_path"
 
-      ## distribute .ipa to AppCentre
-      - name: Distribute .ipa to AppCenter
-        uses: wzieba/AppCenter-Github-Action@v1
-        with:
-          appName: kdrtoolkit-gmail.com/pipeline-ios
-          token: ${{secrets.APP_CENTER_TOKEN_IOS}}
-          group: testers-ios
-          file: pipeline.ipa_path
-          notifyTesters: true
-          debug: false
-          releaseNotes: "Release .ipa"
+      # ## distribute .aab to Google play store
+      # - name: Upload .abb to Google play store
+      #   uses: r0adkll/upload-google-play@v1
+      #   with:
+      #     serviceAccountJsonPlainText: ${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON_TEXT }}
+      #     packageName: com.savczukinv.pipeline
+      #     releaseFiles: android/app/build/outputs/bundle/release/*.aab
+      #     track: production
+      #     status: draft
+      #     inAppUpdatePriority: 2
+
+      # ## distribute .aab to APP STORE
+      # ## TODO

@@ -51,9 +51,11 @@ jobs:
         with:
           message: ${{ steps.coverage.outputs.report }}
 
-  android-build:
-    name: Android build
+  build-android:
+    name: Build Android
+    needs: install-and-test
     runs-on: ubuntu-latest
+
     steps:
       ## prepare environment with cashing
       - name: Repo checkout
@@ -129,8 +131,9 @@ jobs:
           keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-  ios-build:
-    name: iOS build
+  build-ios:
+    name: Build iOS
+    needs: install-and-test
     runs-on: macos-latest
 
     steps:
