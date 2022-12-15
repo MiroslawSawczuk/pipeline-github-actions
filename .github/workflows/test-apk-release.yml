@@ -199,14 +199,14 @@ jobs:
           code-signing-identity: "iPhone Distribution"
           team-id: ${{ secrets.IOS_TEAM_ID }}
           certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
-          output-path: pipeline.ipa_path
+          output-path: "pipeline.ipa"
 
       ## upload artifact .ipa to GHA
       - name: Upload artifact .ipa to GHA
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.FILE_NAME }}.ipa
-          path: pipeline.ipa_path
+          path: "pipeline.ipa"
 
   firebase-distribute-android:
     name: Distribute Android to Firebase
