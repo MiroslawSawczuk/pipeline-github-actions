@@ -74,7 +74,7 @@ jobs:
 
       # build, sign and distribute .ipa to TestFilght
       - name: Build, sign and distribute .ipa to TestFilght
-        uses: sparkfabrik/ios-build-action@v2
+        uses: sparkfabrik/ios-build-action@v2.0.0
         with:
           upload-to-testflight: true
           increment-build-number: true
