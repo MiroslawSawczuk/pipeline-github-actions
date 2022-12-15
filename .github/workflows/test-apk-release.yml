@@ -223,7 +223,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${{ env.FILE_NAME }}.apk
-          path: ${{ env.FILE_NAME }}.apk
+          path: "pipeline.apk"
 
       ## distribute .apk to Firebase app distribution
       - name: Distribute .apk to Firebase app distribution
@@ -251,7 +251,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${{ env.FILE_NAME }}.ipa
-          path: ${{ env.FILE_NAME }}.ipa
+          path: "pipeline.ipa"
 
       ## distribute .ipa to Firebase app distribution
       - name: Distribute .ipa to Firebase app distribution
