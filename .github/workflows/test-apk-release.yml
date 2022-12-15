@@ -262,27 +262,60 @@ jobs:
           file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/pipeline.ipa
           releaseNotes: "Test .ipa"
 
-  ###################################
+      ###################################
 
-  # ## distribute apk to AppCentre
-  # - name: Distribute .apk to App Center
-  #   uses: wzieba/AppCenter-Github-Action@v1
-  #   with:
-  #     appName: kdrtoolkit-gmail.com/pipeline-android
-  #     token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
-  #     group: testers-android
-  #     file: android/app/build/outputs/apk/release/app-release-unsigned.apk
-  #     notifyTesters: true
-  #     debug: false
+  app-centre-distribute-android:
+    name: Distribute Android to AppCentre
+    needs: build-android
+    runs-on: ubuntu-latest
 
-  # ## distribute .ipa to AppCentre
-  # - name: Distribute .ipa to AppCenter
-  #   uses: wzieba/AppCenter-Github-Action@v1
-  #   with:
-  #     appName: kdrtoolkit-gmail.com/pipeline-ios
-  #     token: ${{secrets.APP_CENTER_TOKEN_IOS}}
-  #     group: testers-ios
-  #     file: ${{ env.FILE_NAME }}.ipa
-  #     notifyTesters: true
-  #     debug: false
-  #     releaseNotes: "Test .ipa"
+    steps:
+      ## repo checkout
+      - name: Repo checkout
+        uses: actions/checkout@v3
+
+      ## download .apk
+      - name: Download .apk
+        id: download_apk
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.FILE_NAME }}.apk
+
+      ## distribute .apk to AppCentre
+      - name: Distribute .apk to App Center
+        uses: wzieba/AppCenter-Github-Action@v1
+        with:
+          appName: kdrtoolkit-gmail.com/pipeline-android
+          token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
+          group: testers-android
+          file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/app-release-unsigned-signed.apk
+          notifyTesters: true
+          debug: false
+
+  app-centre-distribute-ios:
+    name: Distribute iOS to AppCentre
+    needs: build-ios
+    runs-on: ubuntu-latest
+
+    steps:
+      ## repo checkout
+      - name: Repo checkout
+        uses: actions/checkout@v3
+
+      ## download .ipa
+      - name: Download .ipa
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.FILE_NAME }}.ipa
+
+      ## distribute .ipa to AppCentre
+      - name: Distribute .ipa to AppCenter
+        uses: wzieba/AppCenter-Github-Action@v1
+        with:
+          appName: kdrtoolkit-gmail.com/pipeline-ios
+          token: ${{secrets.APP_CENTER_TOKEN_IOS}}
+          group: testers-ios
+          file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/pipeline.ipa
+          notifyTesters: true
+          debug: false
+          releaseNotes: "Test .ipa"
