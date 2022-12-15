@@ -9,43 +9,43 @@ env:
   FILE_NAME: pipeline-${{ github.run_number }}
 
 jobs:
-  # install-and-test:
-  #   name: Install and test
-  #   runs-on: ubuntu-latest
+  install-and-test:
+    name: Install and test
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     ## prepare environment with cashing
-  #     - name: Repo checkout
-  #       uses: actions/checkout@v3
+    steps:
+      ## prepare environment with cashing
+      - name: Repo checkout
+        uses: actions/checkout@v3
 
-  #     - name: Install node.js
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 16.15.0
+      - name: Install node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.15.0
 
-  #     - name: Find yarn cache
-  #       id: yarn-cache-path
-  #       run: echo "::set-output name=dir::$(yarn cache dir)"
+      - name: Find yarn cache
+        id: yarn-cache-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
 
-  #     - name: Restore yarn cache
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: ${{ steps.yarn-cache-path.outputs.dir }}
-  #         key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-  #         restore-keys: ${{ runner.os }}-yarn-
+      - name: Restore yarn cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.yarn-cache-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
 
-  #     - name: Install npm dependencies
-  #       run: yarn install --immutable
+      - name: Install npm dependencies
+        run: yarn install --immutable
 
-  #     - name: Linting check
-  #       run: yarn lint:fix
+      - name: Linting check
+        run: yarn lint:fix
 
-  #     - name: Run unit tests
-  #       run: yarn test
+      - name: Run unit tests
+        run: yarn test
 
   build-android:
     name: Build Android
-    # needs: install-and-test
+    needs: install-and-test
     runs-on: ubuntu-latest
 
     steps:
@@ -114,32 +114,32 @@ jobs:
           name: ${{ env.FILE_NAME }}.apk
           path: ${{steps.sign_apk.outputs.signedReleaseFile}}
 
-      # ## build .aab
-      # - name: Build Android release .aab
-      #   run: |
-      #     cd android && ./gradlew bundleRelease --no-daemon
+      ## build .aab
+      - name: Build Android release .aab
+        run: |
+          cd android && ./gradlew bundleRelease && cd ..
 
-      # ## sign .aab
-      # - name: Sign .aab
-      #   id: sign_aab
-      #   uses: r0adkll/sign-android-release@v1
-      #   with:
-      #     releaseDirectory: android/app/build/outputs/bundle/release
-      #     signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
-      #     alias: ${{ secrets.ANDROID_ALIAS }}
-      #     keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
-      #     keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      ## sign .aab
+      - name: Sign .aab
+        id: sign_aab
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: android/app/build/outputs/bundle/release
+          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+          alias: ${{ secrets.ANDROID_ALIAS }}
+          keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-      # ## upload artifact .aab to GHA
-      # - name: Upload artifact .abb to GHA
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: ${{ env.FILE_NAME }}.aab
-      #     path: android/app/build/outputs/bundle/release/*.aab
+      ## upload artifact .aab to GHA
+      - name: Upload artifact .abb to GHA
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.FILE_NAME }}.aab
+          path: ${{steps.sign_aab.outputs.signedReleaseFile}}
 
   build-ios:
     name: Build iOS
-    # needs: install-and-test
+    needs: install-and-test
     runs-on: macos-latest
 
     steps:
@@ -234,7 +234,7 @@ jobs:
           # serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
           groups: testers-android
           file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/app-release-unsigned-signed.apk
-          releaseNotes: "Test .apk"
+          releaseNotes: "Test .apk in Firebase"
 
   firebase-distribute-ios:
     name: Distribute iOS to Firebase
@@ -260,9 +260,7 @@ jobs:
           token: ${{secrets.FIREBASE_TOKEN}}
           groups: testers-ios
           file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/pipeline.ipa
-          releaseNotes: "Test .ipa"
-
-      ###################################
+          releaseNotes: "Test .ipa in Firebase"
 
   app-centre-distribute-android:
     name: Distribute Android to AppCentre
@@ -289,6 +287,7 @@ jobs:
           token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
           group: testers-android
           file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/app-release-unsigned-signed.apk
+          releaseNotes: "Test .apk in AppCenter"
           notifyTesters: true
           debug: false
 
@@ -316,6 +315,6 @@ jobs:
           token: ${{secrets.APP_CENTER_TOKEN_IOS}}
           group: testers-ios
           file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/pipeline.ipa
+          releaseNotes: "Test .ipa in AppCenter"
           notifyTesters: true
           debug: false
-          releaseNotes: "Test .ipa"

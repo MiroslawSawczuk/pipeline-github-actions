@@ -1,0 +1,161 @@
+name: test app release
+run-name: ${{ github.actor }} triggered test release - ${{ github.event.head_commit.message }}
+on:
+  push:
+    branches:
+      - QA
+
+env:
+  FILE_NAME: pipeline-${{ github.run_number }}
+
+jobs:
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
+
+    steps:
+      ## prepare environment with cashing
+      - name: Repo checkout
+        uses: actions/checkout@v3
+
+      - name: Install node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.15.0
+
+      ## cache node modules
+      - name: Find yarn cache
+        id: yarn-cache-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: Restore yarn cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.yarn-cache-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
+
+      - name: Install npm dependencies
+        run: yarn install --immutable
+
+      ## cache pods
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "2.7.5"
+          bundler-cache: true
+
+      - name: Restore pods cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ios/Pods
+            ~/Library/Caches/CocoaPods
+            ~/.cocoapods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Install pods dependencies
+        run: cd ios && pod install --repo-update
+
+      # # build, sign and distribute .ipa to TestFilght
+      # - name: Build, sign and distribute .ipa to TestFilght
+      #   uses: yukiarrr/ios-build-action@v1.4.0
+      #   with:
+      #     project-path: ios/pipeline.xcodeproj
+      #     workspace-path: ios/pipeline.xcworkspace
+      #     mobileprovision-base64: ${{ secrets.IOS_MOBILE_PROVISION_BASE64 }}
+      #     p12-base64: ${{ secrets.IOS_P12_BASE64 }}
+      #     code-signing-identity: "iPhone Distribution"
+      #     team-id: ${{ secrets.IOS_TEAM_ID }}
+      #     certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+      #     output-path: "pipeline.ipa"
+
+      # build, sign and distribute .ipa to TestFilght
+      - name: Build, sign and distribute .ipa to TestFilght
+        uses: sparkfabrik/ios-build-action@v2
+        with:
+          upload-to-testflight: true
+          increment-build-number: true
+          build-pods: true
+          pods-path: "ios/Podfile"
+          configuration: Release
+          export-method: app-store
+          workspace-path: ios/pipeline.xcworkspace
+          project-path: ios/pipeline.xcodeproj
+          scheme: pipeline
+          output-path: "pipeline.ipa"
+          apple-key-id: ${{ secrets.APPLE_KEY_ID }}
+          apple-key-issuer-id: ${{ secrets.APPLE_KEY_ISSUER_ID }}
+          apple-key-content: ${{ secrets.APPLE_KEY_CONTENT }}
+          team-id: ${{ secrets.TEAM_ID }}
+          team-name: ${{ secrets.TEAM_NAME }}
+          match-password: ${{ secrets.MATCH_PASSWORD }}
+          match-git-url: ${{ secrets.MATCH_GIT_URL }}
+          match-git-basic-authorization: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+          match-build-type: "appstore"
+          browserstack-upload: true
+          browserstack-username: ${{ secrets.BROWSERSTACK_USERNAME }}
+          browserstack-access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+
+      ## upload artifact .ipa to GHA
+      - name: Upload artifact .ipa to GHA
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.FILE_NAME }}.ipa
+          path: pipeline.ipa
+
+  # firebase-distribute-ios:
+  #   name: Distribute iOS to Firebase
+  #   needs: build-ios
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     ## repo checkout
+  #     - name: Repo checkout
+  #       uses: actions/checkout@v3
+
+  #     ## download .ipa
+  #     - name: Download .ipa
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: ${{ env.FILE_NAME }}.ipa
+
+  #     ## distribute .ipa to Firebase app distribution
+  #     - name: Distribute .ipa to Firebase app distribution
+  #       uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
+  #       with:
+  #         appId: ${{secrets.IOS_FIREBASE_APP_ID}}
+  #         token: ${{secrets.FIREBASE_TOKEN}}
+  #         groups: testers-ios
+  #         file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/pipeline.ipa
+  #         releaseNotes: "Test .ipa"
+
+  # app-centre-distribute-ios:
+  #   name: Distribute iOS to AppCentre
+  #   needs: build-ios
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     ## repo checkout
+  #     - name: Repo checkout
+  #       uses: actions/checkout@v3
+
+  #     ## download .ipa
+  #     - name: Download .ipa
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: ${{ env.FILE_NAME }}.ipa
+
+  #     ## distribute .ipa to AppCentre
+  #     - name: Distribute .ipa to AppCenter
+  #       uses: wzieba/AppCenter-Github-Action@v1
+  #       with:
+  #         appName: kdrtoolkit-gmail.com/pipeline-ios
+  #         token: ${{secrets.APP_CENTER_TOKEN_IOS}}
+  #         group: testers-ios
+  #         file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/pipeline.ipa
+  #         notifyTesters: true
+  #         debug: false
+  #         releaseNotes: "Test .ipa"
