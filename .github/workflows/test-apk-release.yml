@@ -167,26 +167,26 @@ jobs:
       - name: Install npm dependencies
         run: yarn install --immutable
 
-      ## cache pods
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "2.7.5"
-          bundler-cache: true
+      # ## cache pods
+      # - name: Setup Ruby
+      #   uses: ruby/setup-ruby@v1
+      #   with:
+      #     ruby-version: "2.7.5"
+      #     bundler-cache: true
 
-      - name: Restore pods cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            ios/Pods
-            ~/Library/Caches/CocoaPods
-            ~/.cocoapods
-          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-
+      # - name: Restore pods cache
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: |
+      #       ios/Pods
+      #       ~/Library/Caches/CocoaPods
+      #       ~/.cocoapods
+      #     key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-pods-
 
       - name: Install pods dependencies
-        run: cd ios && pod install --repo-update
+        run: cd ios && pod install
 
       ## build, sign and distribute .ipa to TestFilght
       - name: Build, sign and distribute .ipa to TestFilght
