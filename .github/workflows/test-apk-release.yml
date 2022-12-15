@@ -226,10 +226,6 @@ jobs:
           name: ${{ env.FILE_NAME }}.apk
           path: path_apk
 
-      - name: Display structure of downloaded files
-        run: ls -R
-        working-directory: path_apk
-
       ## distribute .apk to Firebase app distribution
       - name: Distribute .apk to Firebase app distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
@@ -238,7 +234,8 @@ jobs:
           token: ${{secrets.FIREBASE_TOKEN}} # TODO in future token will stop working and will nedd to be changed to serviceCredentialsFileContent
           # serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
           groups: testers-android
-          file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/path_apk/app-release-unsigned-signed.apk
+          file: ${{ env.FILE_NAME }}.apk
+          # file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/path_apk/app-release-unsigned-signed.apk
           releaseNotes: "Test .apk"
 
   # firebase-distribute-ios:
