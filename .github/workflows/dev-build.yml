@@ -102,7 +102,7 @@ jobs:
       ## build .apk
       - name: Build Android release .apk
         run: |
-          cd android && ./gradlew assembleRelease --no-daemon && cd ..
+          cd android && ./gradlew assembleRelease && cd ..
 
       ## sign .apk
       - name: Sign .apk
@@ -118,7 +118,7 @@ jobs:
       ## build .aab
       - name: Build Android release .aab
         run: |
-          cd android && ./gradlew bundleRelease --no-daemon
+          cd android && ./gradlew bundleRelease
 
       ## sign .aab
       - name: Sign .aab
@@ -180,7 +180,7 @@ jobs:
             ${{ runner.os }}-pods-
 
       - name: Install pods dependencies
-        run: cd ios && pod install --repo-update && cd ..
+        run: cd ios && pod install && cd ..
 
       ## build .ipa
       - name: Build .ipa
