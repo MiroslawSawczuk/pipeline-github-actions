@@ -206,7 +206,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.FILE_NAME }}.ipa
-          path: "pipeline.ipa"
+          path: pipeline.ipa
 
   firebase-distribute-android:
     name: Distribute Android to Firebase
