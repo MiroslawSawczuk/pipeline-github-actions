@@ -57,7 +57,7 @@ jobs:
             ${{ runner.os }}-pods-
 
       - name: Install pods dependencies
-        run: cd ios && pod install --repo-update
+        run: cd ios && pod install
 
       # # build, sign and distribute .ipa to TestFilght
       # - name: Build, sign and distribute .ipa to TestFilght
@@ -73,31 +73,34 @@ jobs:
       #     output-path: "pipeline.ipa"
 
       # build, sign and distribute .ipa to TestFilght
-      - name: Build, sign and distribute .ipa to TestFilght
+      - name: Build and sign .ipa
         uses: sparkfabrik/ios-build-action@v2.0.0
         with:
-          upload-to-testflight: true
-          increment-build-number: true
+          project-path: ios/pipeline.xcodeproj
+          team-id: ${{ secrets.IOS_TEAM_ID }}
+          team-name: "Mirosaw Saw"
+
+          workspace-path: ios/pipeline.xcworkspace
+          export-method: "app-store"
+          configuration: "Release"
+          scheme: "pipeline"
+          output-path: "pipeline.ipa"
           build-pods: true
           pods-path: "ios/Podfile"
-          configuration: Release
-          export-method: app-store
-          workspace-path: ios/pipeline.xcworkspace
-          project-path: ios/pipeline.xcodeproj
-          scheme: pipeline
-          output-path: "pipeline.ipa"
-          apple-key-id: ${{ secrets.APPLE_KEY_ID }}
-          apple-key-issuer-id: ${{ secrets.APPLE_KEY_ISSUER_ID }}
-          apple-key-content: ${{ secrets.APPLE_KEY_CONTENT }}
-          team-id: ${{ secrets.TEAM_ID }}
-          team-name: ${{ secrets.TEAM_NAME }}
-          match-password: ${{ secrets.MATCH_PASSWORD }}
-          match-git-url: ${{ secrets.MATCH_GIT_URL }}
-          match-git-basic-authorization: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
-          match-build-type: "appstore"
-          browserstack-upload: true
-          browserstack-username: ${{ secrets.BROWSERSTACK_USERNAME }}
-          browserstack-access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          upload-to-testflight: false
+          increment-build-number: false
+
+          # apple-key-id: ${{ secrets.APPLE_KEY_ID }}
+          # apple-key-issuer-id: ${{ secrets.APPLE_KEY_ISSUER_ID }}
+          # apple-key-content: ${{ secrets.APPLE_KEY_CONTENT }}
+          # configuration: "Release"
+          # match-password: ${{ secrets.MATCH_PASSWORD }}
+          # match-git-url: ${{ secrets.MATCH_GIT_URL }}
+          # match-git-basic-authorization: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+          # match-build-type: "appstore"
+          # browserstack-upload: true
+          # browserstack-username: ${{ secrets.BROWSERSTACK_USERNAME }}
+          # browserstack-access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
 
       ## upload artifact .ipa to GHA
       - name: Upload artifact .ipa to GHA
