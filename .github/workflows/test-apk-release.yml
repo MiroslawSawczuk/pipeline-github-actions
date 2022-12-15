@@ -224,7 +224,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${{ env.FILE_NAME }}.apk
-          path: path_apk
 
       ## distribute .apk to Firebase app distribution
       - name: Distribute .apk to Firebase app distribution
@@ -234,8 +233,7 @@ jobs:
           token: ${{secrets.FIREBASE_TOKEN}} # TODO in future token will stop working and will nedd to be changed to serviceCredentialsFileContent
           # serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
           groups: testers-android
-          file: ${{ env.FILE_NAME }}.apk
-          # file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/path_apk/app-release-unsigned-signed.apk
+          file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/app-release-unsigned-signed.apk
           releaseNotes: "Test .apk"
 
   # firebase-distribute-ios:
