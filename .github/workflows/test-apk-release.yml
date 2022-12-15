@@ -189,11 +189,8 @@ jobs:
       - name: Install pods dependencies
         run: cd ios && pod install && cd ..
 
-      ## build, sign and distribute .ipa to TestFilght
-
-      ## would be better without distribution, so far ther is no any package to only build without distribution
-      ## may be implemented using fastlane
-      - name: Build, sign and distribute .ipa to TestFilght
+      ## build and sign .ipa
+      - name: Build and sign .ipa
         uses: yukiarrr/ios-build-action@v1.4.0
         with:
           project-path: ios/pipeline.xcodeproj
@@ -212,7 +209,7 @@ jobs:
           name: ${{ env.FILE_NAME }}.ipa
           path: pipeline.ipa
 
-  firebase-distribute-android:
+  distribute-android-firebase:
     name: Distribute Android to Firebase
     needs: build-android
     runs-on: ubuntu-latest
@@ -240,33 +237,7 @@ jobs:
           file: ${{ env.ROOT_PATH_DOWNLOAD }}/app-release-unsigned-signed.apk
           releaseNotes: "Test .apk in Firebase"
 
-  firebase-distribute-ios:
-    name: Distribute iOS to Firebase
-    needs: build-ios
-    runs-on: ubuntu-latest
-
-    steps:
-      ## repo checkout
-      - name: Repo checkout
-        uses: actions/checkout@v3
-
-      ## download .ipa
-      - name: Download .ipa
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ env.FILE_NAME }}.ipa
-
-      ## distribute .ipa to Firebase app distribution
-      - name: Distribute .ipa to Firebase app distribution
-        uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
-        with:
-          appId: ${{secrets.IOS_FIREBASE_APP_ID}}
-          token: ${{secrets.FIREBASE_TOKEN}}
-          groups: testers-ios
-          file: ${{ env.ROOT_PATH_DOWNLOAD }}/pipeline.ipa
-          releaseNotes: "Test .ipa in Firebase"
-
-  app-centre-distribute-android:
+  distribute-android-app-centre:
     name: Distribute Android to AppCentre
     needs: build-android
     runs-on: ubuntu-latest
@@ -295,7 +266,33 @@ jobs:
           notifyTesters: true
           debug: false
 
-  app-centre-distribute-ios:
+  distribute-ios-firebase:
+    name: Distribute iOS to Firebase
+    needs: build-ios
+    runs-on: ubuntu-latest
+
+    steps:
+      ## repo checkout
+      - name: Repo checkout
+        uses: actions/checkout@v3
+
+      ## download .ipa
+      - name: Download .ipa
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.FILE_NAME }}.ipa
+
+      ## distribute .ipa to Firebase app distribution
+      - name: Distribute .ipa to Firebase app distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
+        with:
+          appId: ${{secrets.IOS_FIREBASE_APP_ID}}
+          token: ${{secrets.FIREBASE_TOKEN}}
+          groups: testers-ios
+          file: ${{ env.ROOT_PATH_DOWNLOAD }}/pipeline.ipa
+          releaseNotes: "Test .ipa in Firebase"
+
+  distribute-ios-app-centre:
     name: Distribute iOS to AppCentre
     needs: build-ios
     runs-on: ubuntu-latest

@@ -182,6 +182,15 @@ jobs:
       - name: Install pods dependencies
         run: cd ios && pod install && cd ..
 
-      ## build .ipa
-      - name: Build .ipa
-        run: npm run ios:release
+      ## build and sign .ipa
+      - name: Build and sign .ipa
+        uses: yukiarrr/ios-build-action@v1.4.0
+        with:
+          project-path: ios/pipeline.xcodeproj
+          workspace-path: ios/pipeline.xcworkspace
+          mobileprovision-base64: ${{ secrets.IOS_MOBILE_PROVISION_BASE64 }}
+          p12-base64: ${{ secrets.IOS_P12_BASE64 }}
+          code-signing-identity: "iPhone Distribution"
+          team-id: ${{ secrets.IOS_TEAM_ID }}
+          certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          output-path: "pipeline.ipa"

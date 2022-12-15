@@ -43,7 +43,7 @@ jobs:
         run: yarn test
 
   build-android:
-    name: Build Android & release to store
+    name: Build Android
     needs: install-and-test
     runs-on: ubuntu-latest
 
@@ -136,19 +136,19 @@ jobs:
           name: ${{ env.FILE_NAME }}.aab
           path: ${{steps.sign_aab.outputs.signedReleaseFile}}
 
-      ## distribute .aab to Google play store
-      - name: Upload .abb to Google play store
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON_TEXT }}
-          packageName: com.savczukinv.pipeline
-          releaseFiles: ${{steps.sign_aab.outputs.signedReleaseFile}}
-          track: production
-          status: draft
-          inAppUpdatePriority: 2
+      # ## distribute .aab to Google play store
+      # - name: Upload .abb to Google play store
+      #   uses: r0adkll/upload-google-play@v1
+      #   with:
+      #     serviceAccountJsonPlainText: ${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON_TEXT }}
+      #     packageName: com.savczukinv.pipeline
+      #     releaseFiles: ${{steps.sign_aab.outputs.signedReleaseFile}}
+      #     track: production
+      #     status: draft
+      #     inAppUpdatePriority: 2
 
   build-ios:
-    name: Build iOS & release to store
+    name: Build iOS
     needs: install-and-test
     runs-on: macos-latest
 
@@ -198,8 +198,8 @@ jobs:
       - name: Install pods dependencies
         run: cd ios && pod install && cd ..
 
-      ## build, sign and distribute .ipa to TestFilght
-      - name: Build, sign and distribute .ipa to TestFilght
+      ## build and sign .ipa
+      - name: Build and sign .ipa
         uses: yukiarrr/ios-build-action@v1.4.0
         with:
           project-path: ios/pipeline.xcodeproj
@@ -217,3 +217,56 @@ jobs:
         with:
           name: ${{ env.FILE_NAME }}.ipa
           path: pipeline.ipa
+
+  distribute-android-google-play:
+    name: Distribute Android to Google play
+    needs: build-android
+    runs-on: ubuntu-latest
+
+    steps:
+      ## repo checkout
+      - name: Repo checkout
+        uses: actions/checkout@v3
+
+      ## download .aab
+      - name: Download .aab
+        id: download_aab
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.FILE_NAME }}.aab
+
+      ## distribute .aab to Google play store
+      - name: Distribute .abb to Google play store
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON_TEXT }}
+          packageName: com.savczukinv.pipeline
+          releaseFiles: ${{ env.ROOT_PATH_DOWNLOAD }}/app-release-unsigned-signed.aab
+          track: production
+          status: draft
+          inAppUpdatePriority: 2
+
+  distribute-ios-test-flight:
+    name: Distribute iOS to TestFlight
+    needs: build-ios
+    runs-on: ubuntu-latest
+
+    steps:
+      ## repo checkout
+      - name: Repo checkout
+        uses: actions/checkout@v3
+
+      ## download .ipa
+      - name: Download .ipa
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.FILE_NAME }}.ipa
+
+      ## distribute .ipa to Test Flight
+      - name: Distribute .ipa to TestFlight
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-path: ${{ env.ROOT_PATH_DOWNLOAD }}/pipeline.ipa
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
