@@ -233,7 +233,7 @@ jobs:
           token: ${{secrets.FIREBASE_TOKEN}} # TODO in future token will stop working and will nedd to be changed to serviceCredentialsFileContent
           # serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
           groups: testers-android
-          file: pipeline.apk
+          file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/pipeline.apk
           releaseNotes: "Test .apk"
 
   firebase-distribute-ios:
@@ -260,7 +260,7 @@ jobs:
           appId: ${{secrets.IOS_FIREBASE_APP_ID}}
           token: ${{secrets.FIREBASE_TOKEN}}
           groups: testers-ios
-          file: pipeline.ipa
+          file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/pipeline.ipa
           releaseNotes: "Test .ipa"
 
       # ## distribute apk to AppCentre
