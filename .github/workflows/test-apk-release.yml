@@ -3,10 +3,11 @@ run-name: ${{ github.actor }} triggered test release - ${{ github.event.head_com
 on:
   push:
     branches:
-      - someBranch ## - QA
+      - QA
 
 env:
   FILE_NAME: pipeline-${{ github.run_number }}
+  ROOT_PATH_DOWNLOAD: /home/runner/work/pipeline-github-actions/pipeline-github-actions
 
 jobs:
   install-and-test:
@@ -117,7 +118,7 @@ jobs:
       ## build .aab
       - name: Build Android release .aab
         run: |
-          cd android && ./gradlew bundleRelease && cd ..
+          cd android && ./gradlew bundleRelease
 
       ## sign .aab
       - name: Sign .aab
@@ -167,28 +168,31 @@ jobs:
       - name: Install npm dependencies
         run: yarn install --immutable
 
-      # ## cache pods
-      # - name: Setup Ruby
-      #   uses: ruby/setup-ruby@v1
-      #   with:
-      #     ruby-version: "2.7.5"
-      #     bundler-cache: true
+      ## cache pods
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "2.7.5"
+          bundler-cache: true
 
-      # - name: Restore pods cache
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: |
-      #       ios/Pods
-      #       ~/Library/Caches/CocoaPods
-      #       ~/.cocoapods
-      #     key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-pods-
+      - name: Restore pods cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ios/Pods
+            ~/Library/Caches/CocoaPods
+            ~/.cocoapods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
 
       - name: Install pods dependencies
-        run: cd ios && pod install
+        run: cd ios && pod install && cd ..
 
       ## build, sign and distribute .ipa to TestFilght
+
+      ## would be better without distribution, so far ther is no any package to only build without distribution
+      ## may be implemented using fastlane
       - name: Build, sign and distribute .ipa to TestFilght
         uses: yukiarrr/ios-build-action@v1.4.0
         with:
@@ -233,7 +237,7 @@ jobs:
           token: ${{secrets.FIREBASE_TOKEN}} # TODO in future token will stop working and will nedd to be changed to serviceCredentialsFileContent
           # serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
           groups: testers-android
-          file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/app-release-unsigned-signed.apk
+          file: ${{ env.ROOT_PATH_DOWNLOAD }}/app-release-unsigned-signed.apk
           releaseNotes: "Test .apk in Firebase"
 
   firebase-distribute-ios:
@@ -259,7 +263,7 @@ jobs:
           appId: ${{secrets.IOS_FIREBASE_APP_ID}}
           token: ${{secrets.FIREBASE_TOKEN}}
           groups: testers-ios
-          file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/pipeline.ipa
+          file: ${{ env.ROOT_PATH_DOWNLOAD }}/pipeline.ipa
           releaseNotes: "Test .ipa in Firebase"
 
   app-centre-distribute-android:
@@ -286,7 +290,7 @@ jobs:
           appName: kdrtoolkit-gmail.com/pipeline-android
           token: ${{secrets.APP_CENTER_TOKEN_ANDROID}}
           group: testers-android
-          file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/app-release-unsigned-signed.apk
+          file: ${{ env.ROOT_PATH_DOWNLOAD }}/app-release-unsigned-signed.apk
           releaseNotes: "Test .apk in AppCenter"
           notifyTesters: true
           debug: false
@@ -314,7 +318,7 @@ jobs:
           appName: kdrtoolkit-gmail.com/pipeline-ios
           token: ${{secrets.APP_CENTER_TOKEN_IOS}}
           group: testers-ios
-          file: /home/runner/work/pipeline-github-actions/pipeline-github-actions/pipeline.ipa
+          file: ${{ env.ROOT_PATH_DOWNLOAD }}/pipeline.ipa
           releaseNotes: "Test .ipa in AppCenter"
           notifyTesters: true
           debug: false

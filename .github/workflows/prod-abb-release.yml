@@ -5,6 +5,7 @@ on:
 
 env:
   FILE_NAME: pipeline-${{ github.run_number }}
+  ROOT_PATH_DOWNLOAD: /home/runner/work/pipeline-github-actions/pipeline-github-actions
 
 jobs:
   install-and-test:
@@ -42,7 +43,7 @@ jobs:
         run: yarn test
 
   build-android:
-    name: Build Android
+    name: Build Android & release to store
     needs: install-and-test
     runs-on: ubuntu-latest
 
@@ -92,7 +93,7 @@ jobs:
       ## build .apk
       - name: Build Android release .apk
         run: |
-          cd android && ./gradlew assembleRelease --no-daemon && cd ..
+          cd android && ./gradlew assembleRelease && cd ..
 
       ## sign .apk
       - name: Sign .apk
@@ -110,12 +111,12 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.FILE_NAME }}.apk
-          path: android/app/build/outputs/apk/release/*.apk
+          path: ${{steps.sign_apk.outputs.signedReleaseFile}}
 
       ## build .aab
       - name: Build Android release .aab
         run: |
-          cd android && ./gradlew bundleRelease --no-daemon
+          cd android && ./gradlew bundleRelease
 
       ## sign .aab
       - name: Sign .aab
@@ -133,10 +134,21 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.FILE_NAME }}.aab
-          path: android/app/build/outputs/bundle/release/*.aab
+          path: ${{steps.sign_aab.outputs.signedReleaseFile}}
+
+      ## distribute .aab to Google play store
+      - name: Upload .abb to Google play store
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON_TEXT }}
+          packageName: com.savczukinv.pipeline
+          releaseFiles: ${{steps.sign_aab.outputs.signedReleaseFile}}
+          track: production
+          status: draft
+          inAppUpdatePriority: 2
 
   build-ios:
-    name: Build iOS
+    name: Build iOS & release to store
     needs: install-and-test
     runs-on: macos-latest
 
@@ -184,7 +196,7 @@ jobs:
             ${{ runner.os }}-pods-
 
       - name: Install pods dependencies
-        run: cd ios && pod install --repo-update
+        run: cd ios && pod install && cd ..
 
       ## build, sign and distribute .ipa to TestFilght
       - name: Build, sign and distribute .ipa to TestFilght
@@ -197,25 +209,11 @@ jobs:
           code-signing-identity: "iPhone Distribution"
           team-id: ${{ secrets.IOS_TEAM_ID }}
           certificate-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
-          output-path: pipeline.ipa
+          output-path: "pipeline.ipa"
 
       ## upload artifact .ipa to GHA
       - name: Upload artifact .ipa to GHA
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.FILE_NAME }}.ipa
-          path: "pipeline.ipa_path"
-
-      # ## distribute .aab to Google play store
-      # - name: Upload .abb to Google play store
-      #   uses: r0adkll/upload-google-play@v1
-      #   with:
-      #     serviceAccountJsonPlainText: ${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON_TEXT }}
-      #     packageName: com.savczukinv.pipeline
-      #     releaseFiles: android/app/build/outputs/bundle/release/*.aab
-      #     track: production
-      #     status: draft
-      #     inAppUpdatePriority: 2
-
-      # ## distribute .aab to APP STORE
-      # ## TODO
+          path: pipeline.ipa
