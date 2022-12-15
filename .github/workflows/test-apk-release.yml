@@ -220,10 +220,23 @@ jobs:
 
       ## download .apk
       - name: Download .apk
+        id: download_old
         uses: actions/download-artifact@v3
         with:
           name: ${{ env.FILE_NAME }}.apk
-          path: "pipeline.apk"
+          path: pipeline.apk
+
+      - name: "Echo download path"
+        run: echo ${{steps.download_old.outputs.download-path}}
+
+      - uses: actions/download-artifact@v3
+        id: download
+        with:
+          name: ${{ env.FILE_NAME }}.apk
+          path: path/to/artifacts
+
+      - name: "Echo download path"
+        run: echo ${{steps.download.outputs.download-path}}
 
       ## distribute .apk to Firebase app distribution
       - name: Distribute .apk to Firebase app distribution
@@ -251,7 +264,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${{ env.FILE_NAME }}.ipa
-          path: "pipeline.ipa"
+          path: pipeline.ipa
 
       ## distribute .ipa to Firebase app distribution
       - name: Distribute .ipa to Firebase app distribution
