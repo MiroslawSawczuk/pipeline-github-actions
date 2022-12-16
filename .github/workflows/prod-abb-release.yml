@@ -137,17 +137,6 @@ jobs:
           name: ${{ env.FILE_NAME }}.aab
           path: ${{steps.sign_aab.outputs.signedReleaseFile}}
 
-      # ## distribute .aab to Google play store
-      # - name: Upload .abb to Google play store
-      #   uses: r0adkll/upload-google-play@v1
-      #   with:
-      #     serviceAccountJsonPlainText: ${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON_TEXT }}
-      #     packageName: com.savczukinv.pipeline
-      #     releaseFiles: ${{steps.sign_aab.outputs.signedReleaseFile}}
-      #     track: production
-      #     status: draft
-      #     inAppUpdatePriority: 2
-
   build-ios:
     name: Build iOS
     needs: install-and-test
