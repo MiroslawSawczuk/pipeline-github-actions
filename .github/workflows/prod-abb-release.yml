@@ -261,12 +261,17 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${{ env.FILE_NAME }}.ipa
+          path: path/to/artifact
+
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: path/to/artifact
 
       ## distribute .ipa to Test Flight
       - name: Distribute .ipa to TestFlight
         uses: apple-actions/upload-testflight-build@v1
         with:
-          app-path: ${{ env.ROOT_PATH_DOWNLOAD }}/output.ipa
+          app-path: ${{ env.ROOT_PATH_DOWNLOAD }}/pipeline.ipa
           issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
           api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
           api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
