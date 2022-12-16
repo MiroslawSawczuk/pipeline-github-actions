@@ -5,7 +5,8 @@ on:
 
 env:
   FILE_NAME: pipeline-${{ github.run_number }}
-  ROOT_PATH_DOWNLOAD: /home/runner/work/pipeline-github-actions/pipeline-github-actions
+  ROOT_PATH_DOWNLOAD_OS_UBUNTU: /home/runner/work/pipeline-github-actions/pipeline-github-actions
+  ROOT_PATH_DOWNLOAD_OS_MAC: /Users/runner/work/pipeline-github-actions/pipeline-github-actions
 
 jobs:
   install-and-test:
@@ -241,7 +242,7 @@ jobs:
         with:
           serviceAccountJsonPlainText: ${{ secrets.ANDROID_SERVICE_ACCOUNT_JSON_TEXT }}
           packageName: com.savczukinv.pipeline
-          releaseFiles: ${{ env.ROOT_PATH_DOWNLOAD }}/app-release.aab
+          releaseFiles: ${{ env.ROOT_PATH_DOWNLOAD_OS_UBUNTU }}/app-release.aab
           track: production
           status: draft
           inAppUpdatePriority: 2
@@ -271,7 +272,7 @@ jobs:
       - name: Distribute .ipa to TestFlight
         uses: apple-actions/upload-testflight-build@v1
         with:
-          app-path: ${{ env.ROOT_PATH_DOWNLOAD }}/pipeline.ipa
+          app-path: ${{ env.ROOT_PATH_DOWNLOAD_OS_MAC }}/pipeline.ipa
           issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
           api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
           api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
