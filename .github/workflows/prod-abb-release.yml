@@ -261,11 +261,11 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${{ env.FILE_NAME }}.ipa
-          path: path/to/artifact
+      #     path: path/to/artifact
 
-      - name: Display structure of downloaded files
-        run: ls -R
-        working-directory: path/to/artifact
+      # - name: Display structure of downloaded files
+      #   run: ls -R
+      #   working-directory: path/to/artifact
 
       ## distribute .ipa to Test Flight
       - name: Distribute .ipa to TestFlight
