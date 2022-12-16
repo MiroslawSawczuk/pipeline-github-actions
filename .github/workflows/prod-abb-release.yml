@@ -234,6 +234,11 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${{ env.FILE_NAME }}.aab
+          path: path/to/artifact
+
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: path/to/artifact
 
       ## distribute .aab to Google play store
       - name: Distribute .abb to Google play store
@@ -249,7 +254,7 @@ jobs:
   distribute-ios-test-flight:
     name: Distribute iOS to TestFlight
     needs: build-ios
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       ## repo checkout
@@ -261,6 +266,11 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${{ env.FILE_NAME }}.ipa
+          path: path/to/artifact
+
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: path/to/artifact
 
       ## distribute .ipa to Test Flight
       - name: Distribute .ipa to TestFlight
